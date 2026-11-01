@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>AUEVO EvoSpace</title>
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000002;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        #bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #evospace-ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+            #evospace-ui h1 {
+                margin: 0 0 8px 0;
+                font-size: 18px;
+                font-weight: 500;
+                letter-spacing: 0.12em;
+            }
+
+        #telemetry {
+            font-size: 12px;
+            line-height: 1.6;
+            opacity: 0.75;
+        }
+
+        #controls {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            background: rgba(0, 0, 0, 0.55);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 8px;
+            padding: 10px 16px;
+            cursor: pointer;
+        }
+
+            button:hover {
+                border-color: #00ffaa;
+            }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="bg"></canvas>
+
+    <div id="evospace-ui">
+        <h1>AUEVO EVOSPACE</h1>
+
+        <div id="telemetry">
+            <div>Hue: <span id="hueDisplay">0°</span></div>
+            <div>Resonance: <span id="resDisplay">0.000</span></div>
+            <div>Root: <span id="rootDisplay">0</span></div>
+        </div>
+    </div>
+
+    <div id="controls">
+        <button id="micButton">
+            ENGAGE MIRROR CORE
+        </button>
+
+        <button id="recordButton">
+            RECORD
+        </button>
+    </div>
+
+    <!-- Three.js must load before Visualizer.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+    </script>
+
+    <!-- AUEVO EvoSpace visual engine -->
+    <script src="Visualizer.js"></script>
+
+</body>
+
+</html>

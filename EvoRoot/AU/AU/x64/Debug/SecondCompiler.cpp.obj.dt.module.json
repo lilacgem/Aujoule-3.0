@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "AU\\x64\\Debug\\SecondCompiler.obj",
+            "outputs": [
+                "AU\\x64\\Debug\\SecondCompiler.cpp.obj.dt.module.json",
+                "AU\\x64\\Debug\\SecondCompiler.cpp.obj.dt.d.json"
+            ],
+            "requires": []
+        }
+    ]
+}

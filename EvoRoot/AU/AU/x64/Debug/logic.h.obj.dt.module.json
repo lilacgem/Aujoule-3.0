@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "AU\\x64\\Debug\\logic.obj",
+            "outputs": [
+                "AU\\x64\\Debug\\logic.h.obj.dt.module.json",
+                "AU\\x64\\Debug\\logic.h.obj.dt.d.json"
+            ],
+            "requires": []
+        }
+    ]
+}

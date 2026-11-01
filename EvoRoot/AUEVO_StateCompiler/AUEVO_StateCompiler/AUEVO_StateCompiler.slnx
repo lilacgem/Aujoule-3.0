@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="AUEVO_StateCompiler.vcxproj" Id="dfedad7b-ea57-496b-9234-18a534aa55fb" />
+</Solution>

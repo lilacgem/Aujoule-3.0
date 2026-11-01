@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "AUEVO_St.dfedad7b\\x64\\Debug\\AUEVO_StateCompiler.obj",
+            "outputs": [
+                "AUEVO_St.dfedad7b\\x64\\Debug\\AUEVO_StateCompiler.cpp.obj.dt.module.json",
+                "AUEVO_St.dfedad7b\\x64\\Debug\\AUEVO_StateCompiler.cpp.obj.dt.d.json"
+            ],
+            "requires": []
+        }
+    ]
+}
