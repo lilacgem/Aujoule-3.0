@@ -88,6 +88,17 @@
             <label for="packageSelect">Saved state:</label>
             <select id="packageSelect"></select>
         </div>
+        <div id="playbackControls" hidden style="pointer-events: auto; margin: 8px 0; max-width: 520px;">
+            <div>State playback • configured demo, 5 seconds per state</div>
+            <button id="playState" type="button">Play states</button>
+            <button id="restartState" type="button">Restart</button>
+            <div>
+                <label for="stateTimeline">Position</label>
+                <input id="stateTimeline" type="range" min="0" max="1" step="10" value="0" style="width: 200px;">
+                <output id="playbackTime" for="stateTimeline" aria-live="off">0:00 / 0:00</output>
+            </div>
+            <div id="playbackStatus" role="status">Paused</div>
+        </div>
         <div id="telemetry">
             <div>Hue: <span id="hueDisplay">0°</span></div>
             <div>Resonance: <span id="resDisplay">0.000</span></div>
@@ -111,6 +122,7 @@
 
     <!-- AUEVO EvoSpace visual engine -->
     <script src="RecordingTelemetry.js"></script>
+    <script src="StatePlayback.js"></script>
     <script src="Visualizer.js"></script>
 
 </body>

@@ -10,6 +10,7 @@ project: 'AuEvo Mirror',
 };
 
 let evoState = null;
+let statePlayback = null;
 
 function validateDisplayState(state) {
     if (!state || state.schema !== 'EvoMirror-State/v3' || !state.orb) throw new Error('Unsupported state format.');
@@ -67,18 +68,66 @@ async function loadPackageChoices() {
     document.getElementById('packageControls').hidden = false;
     let selected = select.value;
     select.onchange = async () => {
+        if (statePlayback) statePlayback.pause();
         select.disabled = true;
         try {
             const response = await fetch(`/api/state?index=${encodeURIComponent(select.value)}`, {cache: 'no-store'});
             if (!response.ok) throw new Error('Unable to load selected package.');
             displayState(await response.json());
             selected = select.value;
+            if (statePlayback) {
+                const frame = statePlayback.frames.find(frame => String(frame.packageIndex) === selected);
+                if (frame) statePlayback.seek(frame.atMs);
+            }
         } catch (error) {
             select.value = selected;
             document.getElementById('stateStatus').textContent = 'Load failed — previous state retained';
             console.error(error);
         } finally { select.disabled = false; }
     };
+    await loadStatePlayback(select, value => { selected = value; });
+}
+
+async function loadStatePlayback(select, rememberSelection) {
+    try {
+        const response = await fetch('/api/timeline', {cache: 'no-store'});
+        if (!response.ok) throw new Error('State timeline unavailable.');
+        const timeline = await response.json();
+        if (timeline.schema !== 'AUEVO-StateTimeline/v0.1' || timeline.timingOrigin !== 'configured-demo' || !Array.isArray(timeline.frames)) throw new Error('Unsupported state timeline.');
+        for (const frame of timeline.frames) {
+            validateDisplayState(frame.state);
+            if (!frame.state.prototype || !Number.isInteger(frame.packageIndex) || frame.packageIndex < 0 || frame.packageIndex >= select.options.length) throw new Error('Invalid timeline reference.');
+        }
+        const range = document.getElementById('stateTimeline');
+        const button = document.getElementById('playState');
+        const status = document.getElementById('playbackStatus');
+        const formatTime = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
+        statePlayback = new StatePlayback(timeline.frames, timeline.durationMs, {
+            onState: frame => {
+                displayState(frame.state);
+                select.value = String(frame.packageIndex);
+                rememberSelection(select.value);
+            },
+            onUpdate: (position, playing) => {
+                range.value = position;
+                range.setAttribute('aria-valuetext', `${formatTime(position)} of ${formatTime(timeline.durationMs)}`);
+                document.getElementById('playbackTime').textContent = `${formatTime(position)} / ${formatTime(timeline.durationMs)}`;
+                button.textContent = playing ? 'Pause states' : 'Play states';
+                const text = position === timeline.durationMs ? 'Ended' : playing ? 'Playing' : 'Paused';
+                if (status.textContent !== text) status.textContent = text;
+            }
+        });
+        range.max = timeline.durationMs;
+        button.onclick = () => statePlayback.playing ? statePlayback.pause() : statePlayback.play();
+        document.getElementById('restartState').onclick = () => statePlayback.restart();
+        range.oninput = () => { const position = Number(range.value); statePlayback.pause(); statePlayback.seek(position); };
+        document.getElementById('playbackControls').hidden = false;
+    } catch (error) {
+        console.error('State playback unavailable:', error);
+        document.getElementById('playbackStatus').textContent = 'Playback unavailable; saved-state selection still works.';
+        document.getElementById('playbackControls').hidden = false;
+        for (const id of ['playState', 'restartState', 'stateTimeline']) document.getElementById(id).disabled = true;
+    }
 }
 
 function applyEvoState(state) {
@@ -677,6 +726,7 @@ if (recordingTelemetry && mediaRecorder?.state === 'recording' && !recordingStop
 // --- 6. MASTER FLUID RUNTIME SYSTEM LOOP ---
 function animate() {
 requestAnimationFrame(animate);
+if (statePlayback) statePlayback.tick();
 processVocalTelemetry();
 
 camera.position.x += (mouseX * 5 - camera.position.x) * 0.04;

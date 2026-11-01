@@ -27,7 +27,7 @@ try:
     subprocess.run([str(bin_dir / ('state-compiler' + suffix)), str(state), str(runtime / 'evo_state.json')], input='\n'.join(values) + '\n', text=True, check=True)
 except subprocess.CalledProcessError as error:
     raise SystemExit(error.returncode)
-for name in ('index.html', 'RecordingTelemetry.js', 'Visualizer.js'):
+for name in ('index.html', 'RecordingTelemetry.js', 'StatePlayback.js', 'Visualizer.js'):
     shutil.copyfile(root / 'EvoRoot' / 'EvoSpace' / name, runtime / name)
 handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(runtime))
 with http.server.ThreadingHTTPServer(('127.0.0.1', args.port), handler) as server:

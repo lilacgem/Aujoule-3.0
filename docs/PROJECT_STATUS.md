@@ -141,3 +141,16 @@ pass; a browser integration test covers both baseline values, state switching,
 failed-load recovery, denied foreign Host and non-exposure of package files.
 This is not time-based playback, full provenance authentication, production
 hosting, baseline-preserving live modulation or the complete four-mode player.
+
+## Subsequent implementation: configured state timeline
+
+The viewer now serves a versioned `AUEVO-StateTimeline/v0.1` demonstration with
+five-second holds in supplied package order. `StatePlayback.js` adds clock-based
+play/pause/resume, seek, restart and stop-at-end behavior; the selector and slider
+stay synchronized. Seeking pauses, selecting a state pauses, and the last state
+is held at the end. Pausing the timeline does not freeze ambient rendering.
+Timeline timing is labeled configured-demo, not measured session timing.
+This supersedes the prior baseline-viewer's lack of timed playback, but does not
+implement recorded-media playback, a persisted authored timeline, interpolation,
+full canonical semantics or the complete four-mode player. Current static/live
+startup copies the new module without requiring a C++ rebuild.

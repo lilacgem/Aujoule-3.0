@@ -15,6 +15,7 @@ except ModuleNotFoundError:
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = {'/': ('index.html', 'text/html'), '/index.html': ('index.html', 'text/html'),
           '/Visualizer.js': ('Visualizer.js', 'application/javascript'),
+          '/StatePlayback.js': ('StatePlayback.js', 'application/javascript'),
           '/RecordingTelemetry.js': ('RecordingTelemetry.js', 'application/javascript')}
 
 
@@ -26,12 +27,18 @@ def view_state(package):
                           'generation': state['generation'], 'packageHash': package['packageHash'],
                           'status': 'verified-prototype-baseline', 'lineageStatus': 'incomplete',
                           'liveAudioAllowed': False, 'recordingAllowed': False,
-                          'message': 'Prototype baseline only. Full lineage and player playback are not implemented.'}}
+                          'message': 'Prototype baseline only. Full lineage and recorded-media playback are not implemented.'}}
 
 
 def make_handler(paths):
     # Validate once and freeze only permitted display directives in memory.
     states = [view_state(load_json(path)) for path in paths]
+    if not states:
+        raise LineageError('INPUT_MISSING', 'At least one package is required.')
+    timeline = {'schema': 'AUEVO-StateTimeline/v0.1', 'timingOrigin': 'configured-demo',
+                'description': 'Configured demonstration: each state is held for five seconds; not recorded session timing.',
+                'durationMs': len(states) * 5000,
+                'frames': [{'atMs': index * 5000, 'packageIndex': index, 'state': state} for index, state in enumerate(states)]}
     choices = [{'index': index, 'name': Path(path).name, 'generation': states[index]['prototype']['generation']}
                for index, path in enumerate(paths)]
 
@@ -55,6 +62,8 @@ def make_handler(paths):
             if route.path in ASSETS:
                 name, mime = ASSETS[route.path]
                 self.send_data(200, (ROOT / 'EvoRoot/EvoSpace' / name).read_bytes(), mime)
+            elif route.path == '/api/timeline':
+                self.send_data(200, json.dumps(timeline, allow_nan=False).encode())
             elif route.path == '/api/packages':
                 self.send_data(200, json.dumps(choices).encode())
             elif route.path in ('/evo_state.json', '/api/state'):

@@ -205,8 +205,8 @@ to loopback and rejects foreign Host headers. It does not authenticate authorshi
 or provide a production security boundary. Microphone/recording are disabled in
 this baseline-only mode because the current local compile policy does not grant
 those operations. The ordinary `py scripts\run.py` live-audio workflow is separate.
-This is saved-state selection, not timed playback, recorded-video playback or the
-complete four-mode player. Invalid loads retain the previously valid baseline.
+This viewer supports configured timed state playback; recorded-video playback
+and the complete four-mode player remain unfinished. Invalid loads retain the previously valid baseline.
 
 For your own verified prototype packages:
 
@@ -219,3 +219,23 @@ startup, so restart to consume changed files. The optional Playwright browser
 check `node tests/test_package_viewer_browser.cjs` expects the two demo packages
 on port 8001 and uses the same CHROMIUM_PATH/THREE_JS_PATH/EVOSPACE_URL options
 as the recording browser test.
+
+## Timed state playback
+
+In the package viewer, **Play states** starts the configured timeline and changes
+to **Pause states** while playing. **Restart** returns to the first state and stays
+paused. Drag **Position** (or focus it and use arrow/Home/End keys) to seek; seeking
+pauses playback. Selecting a saved state also pauses and seeks to that state's
+start. At the end, playback stops; Play starts again from the beginning.
+
+The demo holds each package for five seconds in supplied order. This is an
+explicitly configured demonstration, not timestamps reconstructed from source
+media, microphone telemetry or compiler generation times. Transitions are steps,
+not interpolation. Pause stops timeline advancement; the ambient Orb animation
+continues. Package files and compiled states are not modified. Microphone and
+recording stay disabled in this mode. No audio/video playback or baseline/live
+modulation redesign is included.
+
+Unit checks: `node --test tests/test_state_playback.cjs`. Optional browser checks:
+`node tests/test_state_playback_browser.cjs` against the running two-state demo,
+using the same browser-path and URL environment options described above.
