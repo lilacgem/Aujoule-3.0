@@ -1,0 +1,10 @@
+# Local development outputs
+/build/
+/runtime/
+__pycache__/
+# Visual Studio generated files (already tracked files are preserved)
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+*.user

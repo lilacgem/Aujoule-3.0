@@ -1,12 +1,17 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <cmath>
+#include <cctype>
+#include <limits>
 
 extern "C" {
 #include "logic.h"
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    if (argc > 2) { std::cerr << "Usage: second-compiler [state-file]\n"; return 1; }
+    const std::string state_path = argc == 2 ? argv[1] : "compiler2_state.txt";
     std::cout << "=== AUEVO SECOND COMPILER INITIATED ===" << std::endl;
 
     int prior_state_version = 0;
@@ -18,7 +23,7 @@ int main() {
     std::string prior_color_hue;
     std::string prior_resonance;
 
-    std::ifstream state_in("compiler2_state.txt");
+    std::ifstream state_in(state_path);
 
     if (state_in.is_open()) {
         state_in >> prior_state_version;
@@ -26,12 +31,18 @@ int main() {
         state_in >> prior_focus;
         state_in >> prior_initial;
 
-        state_in.ignore();
+        state_in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         std::getline(state_in, prior_pattern_style);
         std::getline(state_in, prior_color_hue);
         std::getline(state_in, prior_resonance);
+        for (auto* line : {&prior_pattern_style, &prior_color_hue, &prior_resonance}) {
+            if (!line->empty() && line->back() == '\r') line->pop_back();
+        }
 
+        if (!state_in || prior_state_version < 0 || prior_state_version == std::numeric_limits<int>::max() || prior_intensity < 1 || prior_intensity > 10 || !std::isfinite(prior_focus) || prior_focus < 0 || prior_focus > 1 || prior_resonance != "369") {
+            std::cerr << "Invalid previous compiler state.\n"; return 1;
+        }
         state_in.close();
     }
 
@@ -49,6 +60,12 @@ int main() {
 
     std::cout << "Primary initial: ";
     std::cin >> initial;
+
+    if (!std::cin || intensity < 1 || intensity > 10 || !std::isfinite(focus) || focus < 0 || focus > 1 || !std::isalpha(static_cast<unsigned char>(initial))) {
+        std::cerr << "Invalid input: intensity 1-10, focus 0-1, and an alphabetic initial required.\n";
+        return 1;
+    }
+    initial = static_cast<char>(std::toupper(static_cast<unsigned char>(initial)));
 
     SymbolCode legacy_output = CalculateSymbolAttributes(intensity, focus, initial);
     bool intensity_changed = (prior_intensity != legacy_output.intensity);
@@ -85,11 +102,8 @@ int main() {
     std::cout << "  \"resonance\": \"369\"" << std::endl;
     std::cout << "}" << std::endl;
 
-    // This stops the window from closing instantly when you press Ctrl + F5
-    std::cout << "\nPress Enter to exit..." << std::endl;
-    std::cin.get();
 
-    std::ofstream state_out("compiler2_state.txt");
+    std::ofstream state_out(state_path);
 
     if (state_out.is_open()) {
         state_out << state_version << std::endl;
@@ -103,5 +117,6 @@ int main() {
         state_out.close();
     }
 
+    if (!state_out) { std::cerr << "Unable to save state: " << state_path << "\n"; return 1; }
     return 0;
 }

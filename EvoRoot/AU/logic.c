@@ -1,6 +1,7 @@
 #include "logic.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 int g_root_level = 55;
 
@@ -31,50 +32,50 @@ SymbolCode CalculateSymbolAttributes(int intensity, float focus, char initial) {
     }
 
     if (intensity == 10) {
-        strcpy_s(result_symbol.pattern_style, sizeof(result_symbol.pattern_style), "InnerGlow Fractal Nodes");
+        snprintf(result_symbol.pattern_style, sizeof(result_symbol.pattern_style), "%s", "InnerGlow Fractal Nodes");
         if (focus >= 0.8) {
-            strcpy_s(result_symbol.symbol_density, sizeof(result_symbol.symbol_density), "HIGH (Concentrated Aura)");
+            snprintf(result_symbol.symbol_density, sizeof(result_symbol.symbol_density), "%s", "HIGH (Concentrated Aura)");
         }
         else {
-            strcpy_s(result_symbol.symbol_density, sizeof(result_symbol.symbol_density), "MODERATE (Balanced Flow)");
+            snprintf(result_symbol.symbol_density, sizeof(result_symbol.symbol_density), "%s", "MODERATE (Balanced Flow)");
         }
     }
     else if (intensity >= 7) {
-        strcpy_s(result_symbol.pattern_style, sizeof(result_symbol.pattern_style), "Deep Thinking Fractal Geometry");
+        snprintf(result_symbol.pattern_style, sizeof(result_symbol.pattern_style), "%s", "Deep Thinking Fractal Geometry");
         if (focus >= 0.5) {
-            strcpy_s(result_symbol.symbol_density, sizeof(result_symbol.symbol_density), "MODERATE (Balanced)");
+            snprintf(result_symbol.symbol_density, sizeof(result_symbol.symbol_density), "%s", "MODERATE (Balanced)");
         }
         else {
-            strcpy_s(result_symbol.symbol_density, sizeof(result_symbol.symbol_density), "LOW (Dispersed Seed)");
+            snprintf(result_symbol.symbol_density, sizeof(result_symbol.symbol_density), "%s", "LOW (Dispersed Seed)");
         }
     }
     else {
-        strcpy_s(result_symbol.pattern_style, sizeof(result_symbol.pattern_style), "Minimal Ethereal Curves");
-        strcpy_s(result_symbol.symbol_density, sizeof(result_symbol.symbol_density), "LOW (Dispersed)");
+        snprintf(result_symbol.pattern_style, sizeof(result_symbol.pattern_style), "%s", "Minimal Ethereal Curves");
+        snprintf(result_symbol.symbol_density, sizeof(result_symbol.symbol_density), "%s", "LOW (Dispersed)");
 
         int threshold = 36 + (g_root_level / 3);
         if (void_modifier > threshold) {
-            strcpy_s(result_symbol.pattern_complexity, sizeof(result_symbol.pattern_complexity), "AUEVO SEAL DNA SPILLOVER");
+            snprintf(result_symbol.pattern_complexity, sizeof(result_symbol.pattern_complexity), "%s", "AUEVO SEAL DNA SPILLOVER");
         }
         else if (void_modifier > 30) {
-            strcpy_s(result_symbol.pattern_complexity, sizeof(result_symbol.pattern_complexity), "FRACTAL EVOLUTION");
+            snprintf(result_symbol.pattern_complexity, sizeof(result_symbol.pattern_complexity), "%s", "FRACTAL EVOLUTION");
         }
         else {
-            strcpy_s(result_symbol.pattern_complexity, sizeof(result_symbol.pattern_complexity), "BASIC GEOMETRY");
+            snprintf(result_symbol.pattern_complexity, sizeof(result_symbol.pattern_complexity), "%s", "BASIC GEOMETRY");
         }
     }
 
     if (initial == 'L' || initial == 'J') {
-        strcpy_s(result_symbol.color_hue, sizeof(result_symbol.color_hue), "Gold");
+        snprintf(result_symbol.color_hue, sizeof(result_symbol.color_hue), "%s", "Gold");
     }
     else if (initial == 'A' || initial == 'E') {
-        strcpy_s(result_symbol.color_hue, sizeof(result_symbol.color_hue), "Teal");
+        snprintf(result_symbol.color_hue, sizeof(result_symbol.color_hue), "%s", "Teal");
     }
     else if (initial == 'S' || initial == 'V') {
-        strcpy_s(result_symbol.color_hue, sizeof(result_symbol.color_hue), "Midnight");
+        snprintf(result_symbol.color_hue, sizeof(result_symbol.color_hue), "%s", "Midnight");
     }
     else {
-        strcpy_s(result_symbol.color_hue, sizeof(result_symbol.color_hue), "InnerGlow Neutral");
+        snprintf(result_symbol.color_hue, sizeof(result_symbol.color_hue), "%s", "InnerGlow Neutral");
     }
 
     return result_symbol;
