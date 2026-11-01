@@ -274,3 +274,62 @@ Checks: `node --test tests/test_recorded_session.cjs`. The optional
 `tests/test_recorded_session_browser.cjs` takes `TEST_RECORDING` and
 `TEST_RECORDING_METADATA` paths to a real matching export pair, plus the same
 Chromium/server environment options as the other browser tests.
+
+## Offline WAV analysis on Windows
+
+This first research tool measures your original WAV at its existing rate. It does
+not resample, change pitch, modify the original, apply the 369 formulas, or upload
+any audio. Keep originals outside the repository and preserve them unchanged.
+
+From Command Prompt in the repository folder, create an isolated environment:
+
+```bat
+py -m venv .venv-audio
+.venv-audio\Scripts\python -m pip install -r requirements-audio.txt
+.venv-audio\Scripts\python scripts\analyze_audio.py --output runtime\audio-report-001
+```
+
+Select your original WAV in the file dialog. If a dialog is unavailable, supply
+the quoted WAV path after `analyze_audio.py` instead (Windows **Copy as path** is
+useful). Cancelling the dialog changes nothing. Open `runtime\audio-report-001\report.html` in your browser. No server
+or Visual Studio rebuild is needed. The output directory must be new; choose
+`audio-report-002` for another run. The HTML report opens locally with no external
+assets. Keep its accompanying image/JSON files together.
+
+Outputs: report.html/report.md, measurements.json, waveform.png, levels.png,
+spectrum.png and spectrogram.png. Measurements include format/subtype precision,
+source hash, rate/channels/duration, per-channel RMS/sample peak/DC offset,
+near-full-scale candidates, averaged power spectrum, named band powers,
+centroid/bandwidth/85% rolloff/flatness timelines, silence fraction, onset candidates
+and an **experimental** global pulse/tempo estimate. No meter, musical beat certainty,
+true-peak, calibrated loudness, pitch, emotion or hidden state is claimed.
+
+The audio is read in chunks; frame FFT batches are bounded. Original byte hash
+is verified before/after analysis. Stereo spectra average channel power, avoiding
+phase cancellation from mono mixing. Spectral frames use a Hann window with
+per-frame DC removal; report methods specify FFT/hop, actual bin spacing and
+software versions. Source-wide level measurements include every sample; a final
+incomplete spectral frame is omitted except that a very short clip is explicitly
+zero-padded. Display timelines/spectrograms sample at most about 2,000 windows;
+aggregate PSD covers all full analysis frames. Long recordings can take time and
+pulse analysis still uses an in-memory per-frame onset envelope.
+
+Defaults: FFT=2048, hop=512, silence threshold=-60 dBFS. Change explicitly with
+`--fft-size`, `--hop-size`, `--silence-db`; settings change the measurements and are
+recorded. Bin spacing is not a claim of frequency accuracy. Near-full-scale counts
+are possible clipping evidence, not proof. Silence is represented with null dBFS
+instead of invalid infinite JSON values. Capture chain/rights/uncertainty remain
+unknown unless independently documented. Up to 64 WAV channels are supported;
+non-WAV inputs are rejected rather than silently converted.
+
+Your proposed 66,666 / 66,369 / 36,369 / 63,369 / 99,369 / 93,369 / 96,369 rates
+and conventional 44.1/48/96 kHz references are listed as **not executed** research
+conditions. Native capture and software-resampling experiments are distinct next
+steps. The original rate is inspected, never assumed. The recovered evoMetrics
+formula remains a separate experimental transformation, not a measured result.
+
+On Linux/macOS use `python3 -m venv .venv-audio`, then `.venv-audio/bin/python`
+for the installation and analysis commands. Audio dependency ranges are in
+requirements-audio.txt; exact versions/build/source hashes are in each report.
+Test the audio suite with `.venv-audio\Scripts\python -m unittest discover -s tests -p test_audio_analysis.py -v`.
+Without optional dependencies these audio cases are skipped, not counted as passed.

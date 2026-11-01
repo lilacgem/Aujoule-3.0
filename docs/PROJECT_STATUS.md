@@ -172,3 +172,23 @@ Filename association and optional duration consistency are not cryptographic
 verification; old exports do not contain a video digest. Source identity/rights
 are not inferred. A user-supplied matching recording/JSON pair is used for browser
 playback tests; its private bytes are not added to the repository.
+
+## Subsequent implementation: offline audio inspection v0.1
+
+`scripts/analyze_audio.py` measures WAV files locally at their original sample
+rate, checks source hash before/after, emits measurement JSON and standalone
+HTML/PNG reports, and refuses existing output folders. Per-channel source-wide
+levels, averaged channel-power spectra and window features are distinct from
+an explicitly experimental onset/tempo estimate. The seven new synthetic audio
+cases cover known tone amplitude/PSD/frequency, opposite-phase stereo, silence,
+short/clipped signals, periodic pulse, report output/refusal to overwrite and bad
+settings/nonfinite audio. Optional audio dependencies are separately installed.
+
+The user's full aujoulevol.wav exceeds the workspace attachment transfer limit;
+its original properties have NOT been inspected here. The user must run this tool
+locally and inspect/share the resulting report. Native custom-rate acquisition,
+resampling comparisons, evolved evoMetrics formulas, source rights verification
+and integration of these measurements into canonical Compiler 3 remain unfinished.
+The received audiodata.json is Python/Librosa source referencing another file,
+not analysis results. This step neither restores its assumptions nor relabels
+symbolic constants as measurements.

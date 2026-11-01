@@ -8,3 +8,6 @@ __pycache__/
 [Rr]elease/
 x64/
 *.user
+
+# Optional local audio-analysis environment
+.venv-audio/
