@@ -154,3 +154,21 @@ This supersedes the prior baseline-viewer's lack of timed playback, but does not
 implement recorded-media playback, a persisted authored timeline, interpolation,
 full canonical semantics or the complete four-mode player. Current static/live
 startup copies the new module without requiring a C++ rebuild.
+
+## Subsequent implementation: local Recorded Session playback
+
+`RecordedSession.js` and a file-picker panel add local video playback with optional
+validated `AuEvo-Recording/v1` metadata. Native video controls play/pause/seek,
+volume and mute; recorded telemetry follows the media clock and marks sampling
+gaps unavailable. Reviewable JSON, mismatch rejection, prior-metadata retention,
+object URL cleanup and restoration of state controls are implemented. Loading
+stops live capture and pauses the separate timeline; active recording/export
+cannot be interrupted. No local-file upload or persistence is performed.
+
+This supersedes the earlier absence of recorded-video playback. It does not
+complete pre-export preview/discard, authored timeline persistence, full
+accessibility, captions or the full Compiler 3/Experiential Master contract.
+Filename association and optional duration consistency are not cryptographic
+verification; old exports do not contain a video digest. Source identity/rights
+are not inferred. A user-supplied matching recording/JSON pair is used for browser
+playback tests; its private bytes are not added to the repository.

@@ -15,6 +15,7 @@ except ModuleNotFoundError:
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = {'/': ('index.html', 'text/html'), '/index.html': ('index.html', 'text/html'),
           '/Visualizer.js': ('Visualizer.js', 'application/javascript'),
+          '/RecordedSession.js': ('RecordedSession.js', 'application/javascript'),
           '/StatePlayback.js': ('StatePlayback.js', 'application/javascript'),
           '/RecordingTelemetry.js': ('RecordingTelemetry.js', 'application/javascript')}
 

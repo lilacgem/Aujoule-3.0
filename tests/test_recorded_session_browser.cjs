@@ -1,0 +1,42 @@
+const {chromium}=require('playwright');
+const fs=require('fs');
+const path=require('path');
+const assert=require('assert/strict');
+(async()=>{
+ if(!process.env.TEST_RECORDING || !process.env.TEST_RECORDING_METADATA) throw Error('Set TEST_RECORDING and TEST_RECORDING_METADATA to a matching exported video/JSON pair.');
+ const metadata=JSON.parse(fs.readFileSync(process.env.TEST_RECORDING_METADATA,'utf8'));
+ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ try{
+  const page=await browser.newPage({baseURL:process.env.EVOSPACE_URL||'http://127.0.0.1:8001'});
+  const errors=[],posts=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
+  if(process.env.THREE_JS_PATH)await page.route('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',r=>r.fulfill({contentType:'application/javascript',body:fs.readFileSync(process.env.THREE_JS_PATH)}));
+  await page.goto('/');await page.waitForFunction(()=>typeof statePlayback!=='undefined'&&statePlayback);
+  await page.locator('#recordedSessionPanel > summary').click();
+  await page.locator('#openRecording').setInputFiles(process.env.TEST_RECORDING);
+  await page.waitForFunction(()=>document.querySelector('#sessionVideo').readyState>=1);
+  assert(await page.locator('#playState').isDisabled());
+  await page.locator('#openRecordingMetadata').setInputFiles(process.env.TEST_RECORDING_METADATA);
+  await page.waitForFunction(()=>document.querySelector('#sessionStatus').textContent.includes('metadata matched by filename'));
+  await page.locator('#sessionVideo').evaluate(async video=>{await video.play();});
+  await page.waitForFunction(()=>document.querySelector('#sessionVideo').currentTime>.3);
+  await page.locator('#sessionVideo').evaluate(video=>video.pause());
+  const paused=await page.locator('#sessionVideo').evaluate(video=>video.currentTime);
+  await page.waitForTimeout(200);assert.equal(await page.locator('#sessionVideo').evaluate(video=>video.currentTime),paused);
+  const seek=Math.min(2,metadata.durationMs/2000);
+  await page.locator('#sessionVideo').evaluate((video,time)=>video.currentTime=time,seek);
+  await page.waitForFunction(time=>document.querySelector('#sessionTelemetry').textContent.includes(`Recorded time ${time.toFixed(1)}s`),seek);
+  assert((await page.locator('#sessionTelemetry').innerText()).includes('Microphone level'));
+  const bad={...metadata,videoFilename:'wrong.webm'};
+  await page.locator('#openRecordingMetadata').setInputFiles({name:'wrong.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bad))});
+  await page.waitForFunction(()=>document.querySelector('#sessionStatus').textContent.includes('Previous metadata retained'));
+  await page.locator('#recordedSessionPanel details > summary').click();
+  assert((await page.locator('#sessionMetadataReview').innerText()).includes(path.basename(process.env.TEST_RECORDING)));
+  await page.click('#closeRecording');
+  assert.equal(await page.locator('#sessionVideo').getAttribute('src'),null);
+  assert.equal(await page.locator('#sessionMetadataReview').innerText(),'');
+  assert(!(await page.locator('#playState').isDisabled()));
+  assert(await page.locator('#micButton').isDisabled());
+  assert.deepEqual(errors,[]);assert.deepEqual(posts,[]);
+  console.log('PASS: local video/metadata load, play/pause/seek, synchronized telemetry, mismatch rejection, cleanup; no uploads.');
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exit(1)});

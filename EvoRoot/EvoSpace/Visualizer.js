@@ -759,3 +759,16 @@ window.addEventListener('resize', () => {
 camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
 renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+// Explicit transition to local Recorded Session mode. Do not interrupt an export.
+function prepareRecordedSession() {
+    if (recordingStopping || (mediaRecorder && mediaRecorder.state !== 'inactive')) return false;
+    if (statePlayback) statePlayback.pause();
+    if (micStream) micStream.getTracks().forEach(track => track.stop());
+    if (canvasStream) canvasStream.getTracks().forEach(track => track.stop());
+    if (audioContext) audioContext.close().catch(console.error);
+    micStream = canvasStream = audioContext = analyser = dataArray = null;
+    const micButton = document.getElementById('micButton');
+    if (!evoState?.prototype) micButton.innerText = 'ENGAGE MIRROR CORE';
+    return true;
+}

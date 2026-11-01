@@ -239,3 +239,38 @@ modulation redesign is included.
 Unit checks: `node --test tests/test_state_playback.cjs`. Optional browser checks:
 `node tests/test_state_playback_browser.cjs` against the running two-state demo,
 using the same browser-path and URL environment options described above.
+
+## Recorded Session: open your saved video and metadata
+
+After pulling changes, restart the viewer (`Ctrl+C`, then
+`py scripts\demo_compiler3.py --view`) and refresh the browser with Ctrl+F5.
+Open **Recorded Session — open saved files** at the top right.
+
+1. Under **Open recording**, select the `.webm` video from Windows Downloads.
+2. Optionally select its matching `_metadata.json` under **Open metadata**.
+3. Use the video controls to play, pause, seek, change volume or mute.
+4. The text below the video follows its playback position with recorded microphone
+   level, hue, audio response and root. Sampling gaps show as unavailable.
+5. Expand **Review metadata** to inspect the JSON. **Close recording** releases
+   browser references and restores the previous state-viewer controls.
+
+Video playback works without metadata. Supported metadata is
+`AuEvo-Recording/v1`; older NFT/asset formats are not silently relabeled. Wrong
+filenames, invalid ranges/timestamps and inconsistent summaries are rejected,
+keeping the previously linked metadata. Association is by filename, with a
+basic duration consistency check when available; this format has no video digest
+and cannot authenticate the file or its creator. Captions are not generated.
+Native browser controls handle playback rate where supported.
+
+Files remain local browser object URLs: no upload, server write or persistent
+browser storage. Loading a recording pauses the state timeline, stops any live
+microphone/canvas capture and disables conflicting controls. An active recording
+or export must finish first. The original source files are not deleted by Close;
+previous downloads remain on your PC. Collapsing the panel does not stop video;
+use Pause or Close. Full preview-before-export, discard, captions and reduced-motion
+controls remain future work; this slice plays already saved recordings.
+
+Checks: `node --test tests/test_recorded_session.cjs`. The optional
+`tests/test_recorded_session_browser.cjs` takes `TEST_RECORDING` and
+`TEST_RECORDING_METADATA` paths to a real matching export pair, plus the same
+Chromium/server environment options as the other browser tests.
