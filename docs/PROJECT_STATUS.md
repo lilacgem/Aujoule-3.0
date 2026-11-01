@@ -127,3 +127,17 @@ live modulation envelopes or player adapter is claimed. Local retention is a
 recorded user choice with manual deletion, not an automated guarantee. The
 prototype's deterministic state/package omits run timestamps; it does not yet
 implement the final run-record envelope proposed in the specification.
+
+## Subsequent implementation: prototype baseline viewer
+
+`scripts/serve_package.py` validates saved prototype packages before serving only
+display directives and whitelisted web assets on loopback. The shared visualizer
+now labels loaded legacy/prototype states and ambient fallback, and offers a
+saved-state selector in this viewer. Invalid loads retain the previous valid
+state. `demo_compiler3.py --view` creates and displays the two synthetic packages.
+Microphone/recording are intentionally disabled in this compile-only prototype
+viewer; the original live workflow remains separate. Twenty-one Python cases
+pass; a browser integration test covers both baseline values, state switching,
+failed-load recovery, denied foreign Host and non-exposure of package files.
+This is not time-based playback, full provenance authentication, production
+hosting, baseline-preserving live modulation or the complete four-mode player.

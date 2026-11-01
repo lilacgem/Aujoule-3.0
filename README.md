@@ -184,3 +184,38 @@ they do not prove authorship. The current sorted-JSON encoding is not JCS.
 Run `python3 -m unittest discover -s tests -v` (or `py -m unittest discover -s tests -v`
 on Windows) for the compiler, adapter and package tests. The prototype is tested
 on Linux; Windows execution of these Python commands remains to be verified.
+
+## View the saved prototype states
+
+After pulling the latest changes, run from your repository folder on Windows:
+
+```bat
+py scripts\demo_compiler3.py --view
+```
+
+Leave the command window open and open `http://localhost:8001` on your own PC.
+Use **Saved state** to switch from the baseline (generation 1) to the changed
+state (generation 2). The Orb baseline changes from glow .8/coreIntensity .7 to
+.5/.55. The screen identifies this as a prototype with incomplete lineage.
+No C++ rebuild is needed. Stop with Ctrl+C; use `--port 8002` if needed.
+
+This viewer verifies hashes and compatibility values before starting and serves
+only web assets and display directives, not raw source/provenance files. It binds
+to loopback and rejects foreign Host headers. It does not authenticate authorship
+or provide a production security boundary. Microphone/recording are disabled in
+this baseline-only mode because the current local compile policy does not grant
+those operations. The ordinary `py scripts\run.py` live-audio workflow is separate.
+This is saved-state selection, not timed playback, recorded-video playback or the
+complete four-mode player. Invalid loads retain the previously valid baseline.
+
+For your own verified prototype packages:
+
+```bat
+py scripts\serve_package.py --package YOUR_PACKAGE.json --package ANOTHER_PACKAGE.json
+```
+
+Server startup refuses invalid packages; files are validated into memory at
+startup, so restart to consume changed files. The optional Playwright browser
+check `node tests/test_package_viewer_browser.cjs` expects the two demo packages
+on port 8001 and uses the same CHROMIUM_PATH/THREE_JS_PATH/EVOSPACE_URL options
+as the recording browser test.

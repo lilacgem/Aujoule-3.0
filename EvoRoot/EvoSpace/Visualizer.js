@@ -11,22 +11,74 @@ project: 'AuEvo Mirror',
 
 let evoState = null;
 
+function validateDisplayState(state) {
+    if (!state || state.schema !== 'EvoMirror-State/v3' || !state.orb) throw new Error('Unsupported state format.');
+    for (const key of ['glow', 'density', 'motion', 'complexity', 'coreIntensity']) {
+        if (!Number.isFinite(state.orb[key]) || state.orb[key] < 0 || state.orb[key] > 1) throw new Error(`Invalid Orb value: ${key}`);
+    }
+    for (const key of ['primaryColor', 'secondaryColor', 'coreColor']) {
+        if (!/^#[0-9a-f]{6}$/i.test(state.orb[key])) throw new Error(`Invalid Orb color: ${key}`);
+    }
+}
+
+function displayState(state) {
+    validateDisplayState(state);
+    applyEvoState(state);
+    evoState = state;
+    const status = document.getElementById('stateStatus');
+    const prototype = state.prototype;
+    if (status) status.textContent = prototype
+        ? `Prototype baseline • generation ${prototype.generation} • lineage incomplete`
+        : 'Legacy baseline • provenance unverified';
+    if (status) status.title = prototype?.stateId || '';
+    if (prototype) {
+        // These prototype permissions permit a baseline view only, not microphone use or recording.
+        document.getElementById('micButton').disabled = true;
+        document.getElementById('micButton').innerText = 'BASELINE VIEW — MICROPHONE OFF';
+        document.getElementById('recordButton').disabled = true;
+    }
+}
+
 async function loadEvoState() {
     try {
-        const response = await fetch('./evo_state.json');
-
-        if (!response.ok) {
-            throw new Error(`State load failed: ${response.status}`);
-        }
-
-        evoState = await response.json();
-
+        const response = await fetch('./evo_state.json', {cache: 'no-store'});
+        if (!response.ok) throw new Error(`State load failed: ${response.status}`);
+        displayState(await response.json());
         console.log('AUEVO compiled state loaded:', evoState);
-
-        applyEvoState(evoState);
+        if (evoState.prototype) await loadPackageChoices();
     } catch (error) {
         console.error('Unable to load AUEVO compiled state:', error);
+        const status = document.getElementById('stateStatus');
+        if (status) status.textContent = evoState ? 'Load failed — previous state retained' : 'Ambient fallback — no valid compiled state';
     }
+}
+
+async function loadPackageChoices() {
+    const response = await fetch('/api/packages', {cache: 'no-store'});
+    if (!response.ok) throw new Error('Unable to list saved packages.');
+    const choices = await response.json();
+    const select = document.getElementById('packageSelect');
+    for (const choice of choices) {
+        const option = document.createElement('option');
+        option.value = choice.index;
+        option.textContent = `${choice.name} — generation ${choice.generation}`;
+        select.appendChild(option);
+    }
+    document.getElementById('packageControls').hidden = false;
+    let selected = select.value;
+    select.onchange = async () => {
+        select.disabled = true;
+        try {
+            const response = await fetch(`/api/state?index=${encodeURIComponent(select.value)}`, {cache: 'no-store'});
+            if (!response.ok) throw new Error('Unable to load selected package.');
+            displayState(await response.json());
+            selected = select.value;
+        } catch (error) {
+            select.value = selected;
+            document.getElementById('stateStatus').textContent = 'Load failed — previous state retained';
+            console.error(error);
+        } finally { select.disabled = false; }
+    };
 }
 
 function applyEvoState(state) {

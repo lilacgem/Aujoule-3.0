@@ -1,6 +1,9 @@
 """Run the synthetic Compiler 3 compatibility slice; no microphone or network."""
 from pathlib import Path
 import json
+import argparse
+import subprocess
+import sys
 import tempfile
 
 try:
@@ -12,6 +15,10 @@ except ModuleNotFoundError:
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--view', action='store_true', help='Open a local baseline-view server after the demo')
+    parser.add_argument('--port', type=int, default=8001)
+    args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     fixture = root / 'tests/fixtures/lineage'
     runtime = root / 'runtime'
@@ -46,6 +53,17 @@ def main():
     print(f'Saved demo to {output}')
     print('PASS: baseline, linked changed state, deterministic replay, conflicting claims rejected.')
     print('No source files replaced, no audio captured, no upload performed.')
+    if args.view:
+        sys.stdout.flush()
+        try:
+            subprocess.run([sys.executable, str(root / 'scripts/serve_package.py'),
+                            '--package', str(output / 'baseline-package.json'),
+                            '--package', str(output / 'changed-package.json'), '--port', str(args.port)], check=True)
+        except KeyboardInterrupt:
+            pass
+        except subprocess.CalledProcessError as error:
+            raise SystemExit(error.returncode)
+
 
 
 if __name__ == '__main__':
