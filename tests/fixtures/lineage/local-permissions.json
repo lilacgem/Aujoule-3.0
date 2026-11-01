@@ -1,0 +1,9 @@
+{
+  "schema": "AUEVO-LocalPermissions/v0.1",
+  "scope": "local-prototype",
+  "allowCompile": true,
+  "allowPersist": true,
+  "allowExport": false,
+  "allowCloudUpload": false,
+  "retention": "Local synthetic test files; delete manually after evaluation."
+}

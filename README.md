@@ -4,6 +4,25 @@ The project turns intensity, focus, and an initial into Compiler 2 state,
 then combines that state with activity and complexity to drive the EvoSpace orb.
 No API keys, database, or administrator access are needed.
 
+## Architecture status and next-stage specifications
+
+The existing work repaired and stabilized parts of the AUEVO compiler foundation.
+It did not complete the full architectural scope of Compiler 1, Compiler 2, or
+Compiler 3. The current State Compiler produces Orb-oriented settings; the full
+Third Compiler still needs traceable inputs, lineage/provenance, permissions,
+versioned outputs, change records, experience directives, validation and tests.
+Evo Media supports live audio-reactive visuals, recording and session metadata;
+four-mode playback and complete player controls remain unfinished.
+
+- [Current implementation and source evidence](docs/PROJECT_STATUS.md)
+- [Third Compiler specification v0.1 — DRAFT](docs/THIRD_COMPILER_SPEC_v0.1.md)
+- [Evo Media specification v0.1 — DRAFT](docs/EVO_MEDIA_SPEC_v0.1.md)
+- [Decision and document register](docs/DECISIONS_AND_DOCUMENT_REGISTER.md)
+
+Master overview v1.2 remains a draft, Power Platform remains paused, and NFT
+export is obsolete. Proposed logic is not a final AUEVO equation. These new
+specifications describe future work, not implemented capabilities.
+
 ## Linux / cloud / macOS with GCC
 
 Requires Python 3 and GCC/G++ supporting C++20 (or set CC and CXX to Clang).
@@ -98,3 +117,70 @@ increments, Windows line endings, malformed inputs, and file errors. The reposit
 also contains old tracked Visual Studio caches and binaries; these are preserved,
 but new generated files are ignored. Rebuild executables instead of relying on
 those old binaries.
+
+## Legacy lineage adapter (first Compiler 3 preparation step)
+
+`py scripts/adapt_lineage.py --input runtime/compiler2_state.txt --activity 0.7 --complexity 0.4 --output runtime/lineage-001.json --allow-persist`
+
+Run this from the repository folder after the second compiler has produced the
+input file. On Linux use `python3` in place of `py`. Use the actual activity and
+complexity you chose for that session. Choose a new output name each time.
+`--allow-persist` explicitly requests this local snapshot; it grants no source
+rights, sharing, cloud upload or recording permission. The output directory must
+already exist and support hard links (for example local NTFS); no existing output
+is replaced. Windows execution has not yet been independently verified.
+
+The adapter preserves the exact source bytes as base64 plus SHA-256, all seven
+parsed legacy values, configured inputs and a deterministic content identifier.
+Run time/ID are separate from the content hash. This version uses a named Python
+sorted-JSON serialization, not RFC 8785 canonical JSON. Changing the adapter build
+changes the content identity; replay comparisons require the same implementation.
+Historical lineage, founder attribution, prior-state links and rights remain
+explicitly unknown. Its `AUEVO-LegacyLineage/v0.1` output is **not** a completed
+`Compiler2Lineage` contract, canonical state, correction/reconciliation engine,
+or working player integration. It does not change the current startup command.
+
+Synthetic adapter fixtures are in `tests/fixtures/lineage/`. Run
+`python3 -m unittest discover -s tests -v` to exercise preservation, tampering,
+replays, malformed/trailing records, changed inputs and exclusive local writes.
+
+## Compiler 3 local package prototype
+
+This is the next implementation slice, not completion of Compiler 3. It creates
+`AUEVO-Compiler3Prototype/v0.1` with a linked legacy-derived state, input snapshot,
+hashed member manifest, change report, explanation and baseline directives.
+It preserves unknown lineage/rights and uses only the existing compatibility
+formulas; there are no approved new canonical dimensions or player integration.
+
+To demonstrate it with invented inputs (no C++ rebuild, microphone or network):
+
+```bat
+py scripts\demo_compiler3.py
+```
+
+The command creates a fresh ignored `runtime/compiler3-demo-*` folder with
+baseline/changed packages and a demo report. It checks replay and rejects the
+synthetic conflicting claims. Synthetic fixture permissions allow these local
+files only; do not reuse them as consent for real source media.
+
+For an already adapted local lineage record:
+
+```bat
+py scripts\compile_package.py --lineage runtime\lineage-001.json --permissions YOUR_LOCAL_PERMISSIONS.json --output runtime\package-001.json
+```
+
+Supply your own permission record using the exact schema shown in
+`tests/fixtures/lineage/local-permissions.json`, including an explicit retention
+choice. The command refuses sharing/cloud grants; they are unsupported in this
+prototype. Compilation can run in memory without persistence through its Python
+API, but the CLI needs `allowPersist: true` to save. Add `--prior` with a prior
+package to preserve its state ID/hash and advance the generation. Existing outputs
+are never replaced; an identical replay is an idempotent no-op. `--claims` accepts
+an array of `{recordId, field, value}` assertions: any conflict with the preserved
+input stops compilation. It does not implement approval of founder corrections,
+merge policies or trusted evidence authentication. Hashes detect byte changes;
+they do not prove authorship. The current sorted-JSON encoding is not JCS.
+
+Run `python3 -m unittest discover -s tests -v` (or `py -m unittest discover -s tests -v`
+on Windows) for the compiler, adapter and package tests. The prototype is tested
+on Linux; Windows execution of these Python commands remains to be verified.
