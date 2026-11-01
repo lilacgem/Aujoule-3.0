@@ -1,33 +1,12 @@
 /**
 * @file visualizer.js
-* @description Integrated Procedural Fluid Mirror Core - Cryptographic & Telemetry Enabled
+* @description Procedural Fluid Mirror Core with microphone recording telemetry
 */
 
 const BrandConfig = {
 name: 'AuEvo',
 legal: 'AuEvo Collective',
 project: 'AuEvo Mirror',
-};
-
-const Identity = {
-entity: 'AuEvo Resonance Entity',
-sovereignID: 'AUEVO-0001',
-handshake: 'EVO-CORE-HANDSHAKE',
-frequency: '432Hz',
-lineage: 'Evolving Roots'
-};
-
-const Metadata = {
-identity: { id: 'AUEVO-ROOT' },
-technical_specs: {
-engine: 'three.js r128',
-audioCodec: 'webm',
-fps: 30,
-resolution: 'dynamic'
-},
-multipliers: {
-sovereign_tags: ['awareness', 'resonance', 'audio-visual', 'protocol']
-}
 };
 
 let evoState = null;
@@ -406,101 +385,104 @@ const md = document.getElementById('awarenessDisplay'); if (md) md.innerText = '
 const brandEl = document.getElementById('brandName'); if (brandEl) brandEl.innerText = BrandConfig.name;
 }, 100);
 
+let recordingTelemetry = null;
 let recordingStartTime = 0;
+let recordingDurationMs = 0;
+let recordingAssetId = '';
+let recordingVideoFilename = '';
+let recordingResolution = null;
+let recordingStopping = false;
 
 function downloadBlob(blob, filename) {
-const url = URL.createObjectURL(blob);
-const anchor = document.createElement('a');
-anchor.style.display = 'none'; anchor.href = url; anchor.download = filename;
-document.body.appendChild(anchor); anchor.click(); document.body.removeChild(anchor);
-URL.revokeObjectURL(url);
-}
-
-function createAssetMetadata(durationMs) {
-const assetId = `${Metadata.identity.id}-${Date.now()}`;
-return {
-assetId, createdAt: new Date().toISOString(), creator: BrandConfig.name,
-creatorLegal: BrandConfig.legal, projectName: BrandConfig.name, entity: Identity.entity,
-sovereignID: Identity.sovereignID, handshake: Identity.handshake, frequency: Identity.frequency,
-lineage: Identity.lineage, createdWith: 'AuEvo Mirror', provenance: Metadata.identity.id,
-durationMs, lastHue: Math.round((colorAccumulator % 1.0) * 360), resonance: Number(dynamicFactor.toFixed(4)),
-rootValue: document.getElementById('rootDisplay')?.innerText || '-', activationMode: 'audio-video-resonance',
-format: 'video/webm', videoFrameRate: 30,
-resolution: {
-width: document.querySelector('#bg')?.width || window.innerWidth,
-height: document.querySelector('#bg')?.height || window.innerHeight
-},
-technicalSpecs: Metadata.technical_specs, tags: Metadata.multipliers.sovereign_tags
-};
-}
-
-function createNftMetadata(assetMetadata) {
-return {
-name: `${assetMetadata.projectName} ${assetMetadata.assetId}`,
-description: `A live audio-video resonance session created by ${assetMetadata.creator}.`,
-creator: assetMetadata.creator, creatorLegal: assetMetadata.creatorLegal, provenance: assetMetadata.provenance,
-assetId: assetMetadata.assetId, createdAt: assetMetadata.createdAt, durationMs: assetMetadata.durationMs,
-attributes: [
-{ trait_type: 'Resonance', value: assetMetadata.resonance },
-{ trait_type: 'Last Hue', value: assetMetadata.lastHue },
-{ trait_type: 'Root Value', value: assetMetadata.rootValue },
-{ trait_type: 'Frame Rate', value: assetMetadata.videoFrameRate },
-{ trait_type: 'Resolution', value: `${assetMetadata.resolution.width}x${assetMetadata.resolution.height}` }
-],
-tags: assetMetadata.tags, format: assetMetadata.format, animation_url: `${assetMetadata.assetId}.webm`
-};
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.style.display = 'none';
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 async function saveRecording() {
-if (!recordedChunks.length) return;
-const blob = new Blob(recordedChunks, { type: 'video/webm' });
-const durationMs = Date.now() - recordingStartTime;
-const timestamp = Date.now();
-const assetFilename = `evo_mirror_asset_${timestamp}.webm`;
-
-const assetMetadata = createAssetMetadata(durationMs);
-const metadataJson = JSON.stringify(assetMetadata, null, 2);
-
-const nftMetadata = createNftMetadata(assetMetadata);
-const nftJson = JSON.stringify(nftMetadata, null, 2);
-
-if (window.JSZip) {
-const zip = new JSZip();
-zip.file(assetFilename, blob);
-zip.file(`asset_metadata_${timestamp}.json`, metadataJson);
-zip.file(`nft_metadata_${timestamp}.json`, nftJson);
-zip.file('README.txt', `AuEvo Mirror asset bundle\nCreator: ${assetMetadata.creator}\nAsset ID: ${assetMetadata.assetId}\n`);
-const zipContent = await zip.generateAsync({ type: 'blob' });
-downloadBlob(zipContent, `evo_mirror_bundle_${timestamp}.zip`);
-} else {
-downloadBlob(blob, assetFilename);
-downloadBlob(new Blob([metadataJson], { type: 'application/json' }), `asset_metadata_${timestamp}.json`);
-downloadBlob(new Blob([nftJson], { type: 'application/json' }), `nft_metadata_${timestamp}.json`);
-}
-recordedChunks = [];
+    if (!recordedChunks.length) throw new Error('No recording data was captured.');
+    const mimeType = mediaRecorder.mimeType || recordedChunks[0].type || 'video/webm';
+    const blob = new Blob(recordedChunks, {type: mimeType});
+    const metadata = recordingTelemetry.metadata({
+        assetId: recordingAssetId,
+        videoFilename: recordingVideoFilename,
+        durationMs: recordingDurationMs,
+        mimeType,
+        resolution: recordingResolution,
+        sampleRateHz: audioContext.sampleRate
+    });
+    const metadataJson = JSON.stringify(metadata, null, 2);
+    const metadataFilename = `${recordingAssetId}_metadata.json`;
+    if (window.JSZip) {
+        const zip = new JSZip();
+        zip.file(recordingVideoFilename, blob);
+        zip.file(metadataFilename, metadataJson);
+        const content = await zip.generateAsync({type: 'blob'});
+        downloadBlob(content, `${recordingAssetId}.zip`);
+    } else {
+        downloadBlob(blob, recordingVideoFilename);
+        downloadBlob(new Blob([metadataJson], {type: 'application/json'}), metadataFilename);
+    }
+    recordedChunks = [];
 }
 
 function toggleRecording() {
-if (!micStream) { alert('Start the mirror first before recording.'); return; }
-if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-recordedChunks = []; recordingStartTime = Date.now();
-if (canvasStream && micStream) {
-recordingStream = new MediaStream([...canvasStream.getVideoTracks(), ...micStream.getAudioTracks()]);
-} else {
-alert('Recording is not available yet.'); return;
-}
-try {
-mediaRecorder = new MediaRecorder(recordingStream);
-} catch (err) {
-console.error(err); alert('Recording is not supported in this browser.'); return;
-}
-mediaRecorder.ondataavailable = event => { if (event.data && event.data.size > 0) recordedChunks.push(event.data); };
-mediaRecorder.onstop = () => { saveRecording(); if (recordButton) recordButton.innerText = 'START RECORDING'; };
-mediaRecorder.start();
-if (recordButton) recordButton.innerText = 'STOP RECORDING';
-} else {
-mediaRecorder.stop();
-}
+    if (recordingStopping) return;
+    if (!micStream) { alert('Start the mirror first before recording.'); return; }
+    if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+        if (!canvasStream || !micStream.getAudioTracks().some(track => track.readyState === 'live')) {
+            alert('Recording is not available yet.'); return;
+        }
+        recordingStream = new MediaStream([...canvasStream.getVideoTracks(), ...micStream.getAudioTracks()]);
+        try {
+            mediaRecorder = new MediaRecorder(recordingStream);
+            recordedChunks = [];
+            mediaRecorder.ondataavailable = event => {
+                if (event.data && event.data.size > 0) recordedChunks.push(event.data);
+            };
+            mediaRecorder.onstop = async () => {
+                // Stop collecting before an asynchronous export can begin.
+                recordingDurationMs = recordingDurationMs || performance.now() - recordingStartTime;
+                recordingStopping = true;
+                if (recordButton) recordButton.disabled = true;
+                try { await saveRecording(); }
+                catch (error) { console.error(error); alert('Recording export failed. Please try again.'); }
+                finally {
+                    recordingTelemetry = null;
+                    recordingStopping = false;
+                    if (recordButton) {
+                        recordButton.disabled = false;
+                        recordButton.innerText = 'START RECORDING';
+                    }
+                }
+            };
+            mediaRecorder.start();
+            recordingStartTime = performance.now();
+            recordingDurationMs = 0;
+            recordingAssetId = `evo_mirror_${Date.now()}_${crypto.randomUUID()}`;
+            recordingVideoFilename = `${recordingAssetId}.${mediaRecorder.mimeType.includes('mp4') ? 'mp4' : 'webm'}`;
+            recordingResolution = {width: renderer.domElement.width, height: renderer.domElement.height};
+            recordingTelemetry = new RecordingTelemetry(new Date().toISOString());
+            // Capture fresh microphone values immediately, then approximately every 100 ms.
+            processVocalTelemetry();
+            if (recordButton) recordButton.innerText = 'STOP RECORDING';
+        } catch (error) {
+            recordingTelemetry = null;
+            console.error(error);
+            alert('Recording is not supported in this browser.');
+        }
+    } else {
+        recordingDurationMs = performance.now() - recordingStartTime;
+        recordingStopping = true;
+        if (recordButton) { recordButton.disabled = true; recordButton.innerText = 'SAVING…'; }
+        mediaRecorder.stop();
+    }
 }
 
 if (recordButton) recordButton.addEventListener('click', toggleRecording);
@@ -561,6 +543,10 @@ function processVocalTelemetry() {
 analyser.getByteFrequencyData(dataArray);
 let totalVolume = 0;
 for (let i = 0; i < dataArray.length; i++) { totalVolume += dataArray[i]; }
+
+const liveRoot = calculateDigitalRoot(totalVolume);
+const rootDisplay = document.getElementById('rootDisplay');
+if (rootDisplay) rootDisplay.innerText = liveRoot;
 
 const normalizedVol = totalVolume / (dataArray.length * 255);
 const resonance = resonanceSettings;
@@ -624,8 +610,16 @@ stars.material.color.set(rgbToHex(rgb.r, rgb.g, rgb.b));
 stars.material.size = 0.45 + (rms * 0.8);
 } catch(e) {}
 
-document.getElementById('hueDisplay').innerText = `${Math.round((newHue % 1.0) * 360)}Â°`;
+document.getElementById('hueDisplay').innerText = `${Math.round((newHue % 1.0) * 360)}°`;
 document.getElementById('resDisplay').innerText = dynamicFactor.toFixed(3);
+if (recordingTelemetry && mediaRecorder?.state === 'recording' && !recordingStopping) {
+    recordingTelemetry.sample(performance.now() - recordingStartTime, {
+        microphoneLevel: rms,
+        hueDegrees: ((newHue % 1) + 1) % 1 * 360,
+        resonance: dynamicFactor,
+        rootValue: liveRoot
+    });
+}
 }
 
 // --- 6. MASTER FLUID RUNTIME SYSTEM LOOP ---
