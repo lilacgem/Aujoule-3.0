@@ -239,3 +239,23 @@ Validation: 35 Python cases pass with optional audio dependencies; the complete
 ten-condition matched-window CLI ran on synthetic audio. Sixteen symbolic
 outcomes were cross-checked against the received JavaScript. Windows execution
 of the new feature command and the full user recording are still pending.
+
+## Subsequent correction: fractional-bin integration v0.2
+
+The user's matching-feature report showed an apparent mid/high transfer around
+86.75 seconds alongside slightly different FFT grids. The prior center-mask
+method could assign all power in a boundary bin to different bands. The matched
+feature tool now splits bin mass by physical cell overlap; common-band weights
+also honor the fractional top edge. Full-bin mass/adjacent partitions are
+conserved, including one-sided endpoint conventions. The method/schema were
+bumped to 0.2.0/v0.2 and the older results remain historical outputs.
+
+Synthetic boundary tones show reduced cross-grid assignment differences; they
+do not prove all residual error is gone. Genuine low-pass effects, window leakage,
+rounding and bin-quantized rolloff remain. No source/derivative conversions or
+original evoMetrics logic changed. Rerun the measurements into a new folder;
+old report spectra alone cannot reconstruct the corrected window integrations.
+
+Validation: all 37 Python tests pass, including fractional partition conservation
+and boundary-tone comparisons. The revised ten-condition CLI ran on synthetic
+audio. Corrected measurements for the user's recording require a local rerun.

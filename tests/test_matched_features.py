@@ -8,7 +8,7 @@ if READY:
     import numpy as np
     import soundfile as sf
     from scripts.compare_sample_rates import compare
-    from scripts.compare_audio_features import measure_windows,compare_features
+    from scripts.compare_audio_features import measure_windows,compare_features,integrate_band,fractional_bin_weights
     from scripts.evo_metrics_experiment import evaluate,validate_config
     from scripts.analyze_audio import sha256
 
@@ -32,6 +32,40 @@ class MatchedFeatureTests(unittest.TestCase):
         self.assertIsNone(evaluate({'bass':0.,'mid':0.,'high':0.},{**CONFIG,'enabled':False}))
         for update in [{'configuredFocus':float('nan')},{'priorLeftover':10},{'sessionCount':-1},{'bandRmsReference':0}]:
             with self.assertRaises(ValueError):validate_config({**CONFIG,**update})
+
+    def test_fractional_band_partition_conserves_power_even_and_odd_fft(self):
+        for size in (11025,11026,12000):
+            rate=48000
+            frequency=np.fft.rfftfreq(size,1/rate)
+            power=np.linspace(.1,1,len(frequency))
+            whole=integrate_band(power,frequency,rate/2,0,rate/2)
+            below=integrate_band(power,frequency,rate/2,0,4000)
+            above=integrate_band(power,frequency,rate/2,4000,rate/2)
+            self.assertAlmostEqual(below+above,whole,places=10)
+            self.assertAlmostEqual(whole,float(power.sum()*rate/size),places=10)
+        frequency=np.fft.rfftfreq(12000,1/48000)
+        power=np.zeros(len(frequency));power[1000]=1
+        self.assertEqual(integrate_band(power,frequency,24000,0,4000),2)
+        self.assertEqual(integrate_band(power,frequency,24000,4000,24000),2)
+        self.assertEqual(integrate_band(power,frequency,24000,3999,4001),2)
+        with self.assertRaises(ValueError):fractional_bin_weights(frequency,24000,4000,3000)
+
+    def test_boundary_tones_reduce_grid_assignment_jumps(self):
+        # Isolate FFT-grid effects using the same analytic sound at each rate.
+        # This tests the integration method, not resampler or native-capture quality.
+        for boundary in (20,250,4000):
+            hard=[];fractional=[]
+            for rate in (44100,48000,66369,99369):
+                first=round(.625*rate);last=round(.875*rate)
+                tone=.5*np.sin(2*np.pi*boundary*np.arange(first,last)/rate)
+                size=len(tone);window=np.hanning(size)
+                power=np.abs(np.fft.rfft((tone-tone.mean())*window))**2/(rate*np.sum(window**2))
+                if size%2:power[1:]*=2
+                else:power[1:-1]*=2
+                frequency=np.fft.rfftfreq(size,1/rate)
+                hard.append(float(power[frequency>=boundary].sum()*rate/size))
+                fractional.append(integrate_band(power,frequency,rate/2,boundary,rate/2))
+            self.assertLess(max(fractional)-min(fractional),(max(hard)-min(hard))*.5)
 
     def test_matching_times_stereo_power_and_silence(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -62,6 +96,8 @@ class MatchedFeatureTests(unittest.TestCase):
             self.assertEqual(sha256(source),original_hash)
             self.assertEqual(result['method']['commonUpperHz'],18184.5)
             self.assertEqual(result['method']['windowCount'],3)
+            self.assertEqual(result['schema'],'AUEVO-MatchedAudioFeatures/v0.2')
+            self.assertEqual(result['method']['bandIntegration']['id'],'fractional-bin-cell-overlap/v1')
             identity=next(x for x in result['conditions'] if x['rateHz']==48000)
             self.assertEqual(identity['differencesFromOriginal']['rmsLinear']['maxAbsoluteDifference'],0)
             self.assertEqual(identity['symbolicComparison']['differentRootWindows'],0)

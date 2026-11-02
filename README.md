@@ -459,3 +459,35 @@ cloud upload, identity inference or persistent evolution is enabled.
 Tests: `.venv-audio\Scripts\python -m unittest discover -s tests -p test_matched_features.py -v`.
 Optional command-line paths `--original` and `--comparison` replace the dialogs.
 Existing output folders are refused; use a new suffix for a separate run.
+
+## Matched-feature method 0.2: fractional FFT-bin boundaries
+
+The first matched-feature reports used whole bins selected by center frequency.
+A boundary bin near 4,000 Hz could switch entirely between mid and high bands
+when the sample grid changed, producing a large apparent transfer of band power.
+Version 0.2 replaces that step with fractional overlap of FFT-bin cells and
+physical band intervals. Cells meet halfway between adjacent frequencies and
+are clipped to 0..Nyquist. Each cell retains its original `PSD*df` mass, including
+DC/Nyquist endpoints. Adjacent band partitions therefore conserve discrete power.
+Common-band spectral moments/rolloff/flatness also use fractional upper-edge
+weights. Centroid still uses bin centers and rolloff remains bin-quantized.
+
+This is an explicit uniform-within-bin model, not a new high-resolution spectrum.
+Finite windows, leakage, sample boundaries and genuine filtering changes remain.
+Do not interpret remaining differences or optional root threshold crossings as
+proof of a special frequency rate. The original received evoMetrics is unchanged;
+symbolic output remains off unless explicitly configured.
+
+Rerun only the feature analysis, using the **same original and comparison.json**:
+
+```bat
+.venv-audio\Scripts\python scripts\compare_audio_features.py --output runtime\matched-features-002
+```
+
+No conversion rerun, dependency install or Visual Studio rebuild is needed.
+Keep matched-features-001 as the prior method's record. New reports identify
+`AUEVO-MatchedAudioFeatures/v0.2`, method 0.2.0 and
+`fractional-bin-cell-overlap/v1`; upload summary.json from the new folder for
+comparison. Synthetic boundary tests cover 20, 250 and 4,000 Hz across multiple
+sample grids; conservation tests cover even/odd FFT sizes and split bins. These
+test the method, not native hardware capture or a promised audible improvement.

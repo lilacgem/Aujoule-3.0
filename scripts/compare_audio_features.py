@@ -25,15 +25,42 @@ ROOT=Path(__file__).resolve().parents[1]
 CORE=ROOT/'docs/source_records/evo-metrics-received/evoMetrics.js'
 
 
-def spectral_features(power, frequency, upper):
-    mask=frequency<upper
-    values=power[mask];hz=frequency[mask]
-    total=float(values.sum())
+def fractional_bin_weights(frequency, nyquist, lower, upper):
+    """Fraction of each FFT bin's power assigned to a band by bin-cell overlap.
+
+    Bin cells meet at frequency midpoints, clipped to 0..Nyquist. Endpoint
+    cells retain their full discrete PSD-bin mass, conserving sum(PSD)*df.
+    This is a uniform-within-cell estimate, not recovered sub-bin information.
+    """
+    frequency=np.asarray(frequency,dtype=float)
+    if frequency.ndim!=1 or len(frequency)<2 or not np.all(np.isfinite(frequency)) or frequency[0]!=0 or np.any(np.diff(frequency)<=0):
+        raise ValueError('An increasing one-sided FFT frequency grid starting at zero is required.')
+    if not all(math.isfinite(value) for value in (nyquist,lower,upper)) or nyquist<=0 or lower<0 or upper<lower:
+        raise ValueError('Invalid frequency integration limits.')
+    if frequency[-1]>nyquist+1e-9*(frequency[1]-frequency[0]):raise ValueError('Frequency grid exceeds Nyquist.')
+    edges=np.concatenate(([0.],(frequency[:-1]+frequency[1:])/2,[nyquist]))
+    widths=np.diff(edges)
+    if np.any(widths<=0):raise ValueError('Invalid FFT bin-cell widths.')
+    overlap=np.maximum(0,np.minimum(edges[1:],min(upper,nyquist))-np.maximum(edges[:-1],lower))
+    return np.clip(overlap/widths,0,1)
+
+
+def integrate_band(power,frequency,nyquist,lower,upper):
+    weights=fractional_bin_weights(frequency,nyquist,lower,upper)
+    return float(np.dot(power,weights)*(frequency[1]-frequency[0]))
+
+
+def spectral_features(power, frequency, upper, nyquist):
+    weights=fractional_bin_weights(frequency,nyquist,0,upper)
+    weighted=power*weights
+    total=float(weighted.sum())
     if total<=1e-20:return {'centroidHz':None,'bandwidthHz':None,'rolloff85Hz':None,'flatness':None}
-    centroid=float(np.sum(values*hz)/total)
-    return {'centroidHz':centroid,'bandwidthHz':float(np.sqrt(np.sum(values*(hz-centroid)**2)/total)),
-            'rolloff85Hz':float(hz[np.searchsorted(np.cumsum(values),total*.85)]),
-            'flatness':float(np.exp(np.mean(np.log(np.maximum(values,1e-30))))/max(float(values.mean()),1e-30))}
+    centroid=float(np.sum(weighted*frequency)/total)
+    active=weights>0
+    flatness=float(np.exp(np.sum(weights[active]*np.log(np.maximum(power[active],1e-30)))/weights.sum())/(total/weights.sum()))
+    return {'centroidHz':centroid,'bandwidthHz':float(np.sqrt(np.sum(weighted*(frequency-centroid)**2)/total)),
+            'rolloff85Hz':float(frequency[np.searchsorted(np.cumsum(weighted),total*.85)]),
+            'flatness':flatness}
 
 
 def measure_windows(path, source_duration, common_upper, window_seconds, hop_seconds, config):
@@ -54,7 +81,7 @@ def measure_windows(path, source_duration, common_upper, window_seconds, hop_sec
             if size%2:power[1:]*=2
             else:power[1:-1]*=2
             frequency=np.fft.rfftfreq(size,1/rate);df=rate/size
-            bands={name:float(power[(frequency>=lo)&(frequency<hi)].sum()*df)
+            bands={name:integrate_band(power,frequency,rate/2,lo,hi)
                    for name,lo,hi in [('bass',20,250),('mid',250,4000),('high',4000,common_upper)]}
             rms=float(np.sqrt(np.mean(data*data)));peak=float(np.abs(data).max())
             amplitudes=np.sqrt(list(bands.values()))
@@ -64,8 +91,8 @@ def measure_windows(path, source_duration, common_upper, window_seconds, hop_sec
                     'crestFactor':peak/rms if rms>0 else None,
                     'rmsChangeDb':20*math.log10(rms/previous_rms) if rms>0 and previous_rms is not None and previous_rms>0 else None,
                     'positiveBandChange':float(np.maximum(amplitudes-previous_band,0).sum()) if previous_band is not None else None,
-                    'commonBandPower':bands,'fullBand':spectral_features(power,frequency,rate/2+df),
-                    'commonBand':spectral_features(power,frequency,common_upper)}
+                    'commonBandPower':bands,'fullBand':spectral_features(power,frequency,rate/2,rate/2),
+                    'commonBand':spectral_features(power,frequency,common_upper,rate/2)}
             if config:record['evoMetricsExperiment']=evaluate(bands,config)
             records.append(record);previous_band=amplitudes;previous_rms=rms
     return records
@@ -128,9 +155,9 @@ def compare_features(original,comparison_path,output,*,window_seconds=.25,hop_se
         raise ValueError('Insufficient disk space for feature records and plots.')
     print('Comparing matching time windows; original and derived audio are read-only.',flush=True)
     reference=measure_windows(original,source.duration,common_upper,window_seconds,hop_seconds,config)
-    report={'schema':'AUEVO-MatchedAudioFeatures/v0.1','source':comparison['source'],
+    report={'schema':'AUEVO-MatchedAudioFeatures/v0.2','source':comparison['source'],
             'comparisonRef':{'filename':comparison_path.name,'sha256':comparison_hash},
-            'method':{'version':'0.1.0','buildHash':sha256(__file__),'python':platform.python_version(),
+            'method':{'version':'0.2.0','buildHash':sha256(__file__),'python':platform.python_version(),
                       'numpy':np.__version__,'scipy':scipy.__version__,'soundfile':sf.__version__,
                       'windowSeconds':window_seconds,'hopSeconds':hop_seconds,'windowCount':count,
                       'window':'symmetric Hann, channel-power mean, per-window DC removal',
@@ -138,7 +165,11 @@ def compare_features(original,comparison_path,output,*,window_seconds=.25,hop_se
                       'commonUpperHz':common_upper,'bandsHz':{'bass':[20,250],'mid':[250,4000],'high':[4000,common_upper]},
                       'positiveBandChange':'sum positive changes of band RMS between adjacent windows; not full-spectrum flux or a certified transient detector',
                       'dynamics':'window RMS, sample peak, crest factor, adjacent RMS change; not calibrated loudness',
-                      'spectralUnit':'one-sided PSD in sample unit squared per Hz; bands integrate PSD'},
+                      'spectralUnit':'one-sided PSD in sample unit squared per Hz; bands integrate discrete bin mass with fractional cell overlap',
+                      'bandIntegration':{'id':'fractional-bin-cell-overlap/v1','cells':'midpoints between FFT centers, clipped to 0..Nyquist',
+                                         'massConvention':'each bin retains PSD*df mass, including DC/Nyquist endpoints',
+                                         'withinCellModel':'uniform distribution of bin power; no recovered sub-bin information',
+                                         'spectralMoments':'fractional upper-band weights applied; centroid uses bin centers; rolloff remains bin-quantized; flatness is fraction-weighted'}},
             'symbolicExperiment':{'enabled':bool(config and config['enabled']), 'config':config,
                                   'receivedCoreSha256':sha256(CORE),
                                   'adaptationSha256':sha256(Path(__file__).with_name('evo_metrics_experiment.py')),
@@ -146,7 +177,8 @@ def compare_features(original,comparison_path,output,*,window_seconds=.25,hop_se
             'originalWindows':reference,'conditions':[],
             'limitations':['Software-resampled data only, not native sample-rate evidence.',
                            'Full-band metrics have different bandwidths; primary differences use the same common upper frequency.',
-                           'FFT bin placement and sample-boundary rounding can change estimates; this is not a quality ranking.',
+                           'Fractional integration reduces all-or-nothing band assignment; finite-window leakage, grid placement and boundary rounding still affect estimates. This is not a quality ranking.',
+                           'Version 0.2 changes band integration and common-band weights; older feature reports are retained, not silently equivalent.',
                            'Last incomplete physical window is excluded. No pitch, emotion, medical state or identity inference.',
                            'Experimental normalization is chosen configuration, not original core mathematics or a calibrated energy scale.']}
     staged=Path(tempfile.mkdtemp(prefix='.matched-features-',dir=output.parent))
@@ -202,7 +234,7 @@ def render(report,folder):
         rows.append(f"<tr><td>{condition['rateHz']}</td><td>{fmt(diff['rmsLinear']['meanAbsoluteDifference'])}</td><td>{fmt(diff['centroidHz']['meanAbsoluteDifference'])}</td><td>{fmt(diff['highPower']['meanAbsoluteDifference'])}</td><td>{root}</td></tr>")
     axes[0].legend(ncol=3);axes[-1].set_xlabel('Common window center time (s)');fig.tight_layout();fig.savefig(folder/'feature-differences.png');plt.close(fig)
     webpage=f'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Matched audio features</title><style>body{{font:16px system-ui;max-width:1300px;margin:auto;padding:24px;line-height:1.5}}td,th{{padding:8px;border:1px solid #aaa}}table{{border-collapse:collapse}}img{{max-width:100%}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}}</style>
-<h1>Matched-window audio features: {html.escape(report['source']['filename'])}</h1><p>Measured audio features and optional experimental symbolic outputs remain separate. No new capture or new physical claim.</p>
+<h1>Matched-window audio features: {html.escape(report['source']['filename'])}</h1><p>Method {report['method']['version']} • fractional-bin integration. Power in a bin crossing a band edge is split by cell overlap, not assigned wholly by its center. This is an estimate within each bin, not newly resolved frequency information.</p><p>Measured audio features and optional experimental symbolic outputs remain separate. No new capture or new physical claim.</p>
 <p>{report['method']['windowCount']} windows, {report['method']['windowSeconds']}s each, {report['method']['hopSeconds']}s hop. Common-band upper limit: {report['method']['commonUpperHz']} Hz. Full-band metrics are also in JSON.</p>
 <table><tr><th>Rate</th><th>Mean |Δ RMS|</th><th>Mean |Δ centroid| Hz</th><th>Mean |Δ high-band power|</th><th>Different symbolic root windows</th></tr>{''.join(rows)}</table>
 <img src="feature-differences.png" alt="Differences from original across matching time windows; data in feature JSON">
