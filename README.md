@@ -705,3 +705,30 @@ Matching decoded samples establishes equality against that hash-linked control;
 it does not explain changed container bytes, authenticate the comparison record,
 or replace the original source hash in any previous report. Different lengths,
 rates, channels, non-finite samples or altered control bytes stop the comparison.
+
+### Record audio evidence reconciliation without replacing hashes
+
+After the exact decoded-sample check succeeds, run:
+
+```bat
+.venv-audio\Scripts\python scripts\reconcile_audio_evidence.py
+```
+
+Select the current original WAV. Defaults read the existing state in
+`runtime/audio-state-draft-001`, features and summary in
+`runtime/matched-features-002`, comparison in `runtime/rate-comparison-001`, and
+sample report in `runtime/audio-sample-check-001`. All paths can be overridden
+with `--state`, `--features`, `--summary`, `--comparison`, and `--sample-report`.
+
+The tool resolves the complete measurement chain again, verifies the control hash,
+repeats the streaming exact sample comparison, and requires the saved sample
+report to match. It records both source hashes and their relationship in
+`runtime/audio-reconciliation-001/reconciliation.json` and `reconciliation.html`.
+An existing output folder is refused. Changed inputs, different samples, altered
+reports, mismatched references or failed evidence checks stop reconciliation.
+
+The hash-addressed reconciliation is an additional local report, not a state
+correction, source hash replacement, strict-resolver override, authenticated
+attestation or history commit. It does not establish which container bytes changed
+or compare against the unavailable earlier original WAV bytes. Only the identity
+control is rechecked here; other derivative WAVs are not rehashed by this command.

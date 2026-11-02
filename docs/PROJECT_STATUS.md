@@ -368,3 +368,19 @@ non-committing prototypes.
 Validation: all 56 Python tests pass with optional audio dependencies. The uploaded
 chain resolves 2,731 observations across 10 conditions; optional media bytes remain
 not provided in this cloud run.
+
+## Subsequent implementation: decoded-audio reconciliation report
+
+The read-only `reconcile_audio_evidence.py` reconstructs the local measurement
+chain and freshly compares the current WAV against the hash-linked identity
+control. A previously saved sample report must agree with that recheck. The
+separate hash-addressed reconciliation preserves both source hashes and explicitly
+records strictSourceByteMatch=false, decodedControlSampleMatch=true, without
+replacing hashes, modifying state or authorizing history. It does not determine
+the changed container bytes or authenticate provenance. Other derivative audio
+bytes are not checked by this command. Tests exercise real synthetic WAVs,
+unchanged inputs, saved-report alteration and actual sample inequality.
+
+The user's uploaded sample comparison reports exact equality across 15,063,149
+mono frames at 44,100 Hz against the hash-matched control; the fresh reconciliation
+against their WAV must run locally because those media bytes are unavailable here.
