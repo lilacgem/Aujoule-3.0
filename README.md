@@ -531,3 +531,47 @@ Use `--features` and `--summary` for explicit file paths. For another run use a 
 Future parameter experiments can pass an explicit copied `--config` file, with
 each change documented. Do not tune parameters merely to produce desired gates.
 Tests are `test_evo_trial.py` in the optional audio test suite.
+
+## evoMetrics sensitivity study — one factor at a time
+
+This uses the same corrected features, without audio conversions, new packages,
+recording, camera access or persistent history changes:
+
+```bat
+.venv-audio\Scripts\python scripts\run_evo_sensitivity.py
+```
+
+Select **features.json in matched-features-002**, with its sibling summary.json.
+Open `runtime\evo-sensitivity-001\sensitivity.html` afterward; the small
+`sensitivity-summary.json` contains all settings and per-rate comparisons.
+Use a new `--output` folder for another run; previous outputs are not replaced.
+
+The predeclared plan is `experiments/evo-sensitivity-study.json`. It keeps the
+fixed-focus trial as baseline and changes exactly one configuration field:
+
+- Band RMS reference: .025, .05, .2, .4 (baseline .1).
+- Configured focus: 0, .25, .75, 1 (baseline .5).
+- Session count: 1, 10, 100, 101 (baseline 0).
+
+Prior leftover stays 1. Each window is independent. These are diagnostic values,
+not a search for more gates or production recommendations. The study evaluates
+13 configurations, each against the original and all existing rate conditions.
+It separates changes caused by a configured parameter from differences between
+sample rates under the **same** parameter. Optional `--features`, `--summary` and
+`--plan` paths replace defaults/dialogs.
+
+Metrics include root/gate/shape changes, floor occupancy, normalization clipping,
+continuous voice changes and raw session-term share. Clipping here is in the
+experimental input mapping, not the WAV. Zero total contribution gives an
+undefined share, not 0%. A raw term's size is not its causal importance after
+rounding/modulo. A hash of the ordered root/gate/shape sequence identifies equal
+symbolic output across settings; it does not identify equal audio or continuous
+formula values. Up to 50 changed-root windows per rate/setting retain threshold
+margins and scaled deltas; total counts remain complete.
+
+The existing formula caps its count variable at session 100. Before that cap,
+scaling the count term by 100 nominally yields multiples of 369, divisible by 9.
+Digital-root reduction can erase such increments; floor/rounding still matters.
+Compare those measured outputs with the raw contribution report instead of
+assuming a larger 369 term must cause proportionately larger symbolic change.
+All preset choices, input hashes and method versions are recorded.

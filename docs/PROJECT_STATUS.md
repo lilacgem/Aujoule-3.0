@@ -278,3 +278,25 @@ identity evolution or the final equation. Zero input can yield a nonzero root
 under the original floor rule, and many input changes can share a symbolic bucket.
 All original logic remains preserved; no production renderer or canonical model
 was changed in this increment.
+
+## Subsequent implementation: one-factor sensitivity study
+
+`run_evo_sensitivity.py` and the predeclared study plan vary normalization reference,
+configured focus and session count independently, retaining the approved baseline
+and prior leftover. The tool reuses verified corrected feature records, evaluates
+all sample-rate conditions at each fixed setting, and reports floors, clipping,
+continuous changes, discrete changes and raw contribution shares separately.
+Undefined zero-total shares are not mislabeled as zero. Ordered symbolic sequence
+hashes distinguish equality of outputs from equality of continuous/audio values.
+Bounded changed-window details expose rounding thresholds. No canonical or
+production formula is modified; no history is advanced.
+
+The study ran on the user's already-provided measurements in ignored runtime.
+The count cap and divisible-by-nine behavior are recorded as mathematical rule
+properties, not physical resonance findings. No parameter is selected as better
+because it yields more gates. This study does not test factor interactions,
+native capture, generalization to other recordings or actual evolving identities.
+
+Validation at this increment: 43 Python tests pass with optional audio dependencies.
+The full 13-setting study ran on the supplied corrected records, comparing every
+rate under each setting. Private input records/generated reports are not committed.
