@@ -333,3 +333,62 @@ for the installation and analysis commands. Audio dependency ranges are in
 requirements-audio.txt; exact versions/build/source hashes are in each report.
 Test the audio suite with `.venv-audio\Scripts\python -m unittest discover -s tests -p test_audio_analysis.py -v`.
 Without optional dependencies these audio cases are skipped, not counted as passed.
+
+## Software sample-rate comparison experiment
+
+Use the same `.venv-audio` environment from the inspection step; no new packages
+or Visual Studio rebuild are needed. From the repository folder:
+
+```bat
+.venv-audio\Scripts\python scripts\compare_sample_rates.py --output runtime\rate-comparison-001
+```
+
+Select the **original WAV** in the file picker. The command prints resource
+estimates, then works through the rates sequentially. For your roughly 342-second
+mono recording, the default derived WAVs require about 1 GiB of disk space and a
+working-RAM budget around 1.3 GiB. Actual free resources are checked; close other
+large applications if necessary. This can take several minutes. Leave the command
+window open. It never changes the original and verifies the source hash again
+before publishing the results. Cancelling removes the staged conversion files.
+
+Open `runtime\rate-comparison-001\comparison.html` after it finishes. Keep that
+folder's WAVs, JSON and spectrum image together. Existing output is not replaced;
+choose `rate-comparison-002` for a separate experiment. Outputs use 32-bit FLOAT
+WAV; their actual rates, sample counts and hashes are verified after writing.
+Do not commit original or derived media to GitHub; `runtime/` is ignored.
+
+Defaults: original-rate identity control, 44,100, 48,000, 96,000, 66,666, 66,369,
+36,369, 63,369, 99,369, 93,369 and 96,369 samples/second, with duplicate rates removed.
+**36,369 is a downsampling condition** for a 44,100-rate source. These are software
+conversion conditions, not native ADC measurements or assumed quality rankings.
+The 369-related transformation logic is not applied in this experiment.
+
+For a resource preview only, add `--dry-run` (select the WAV again). To test a
+subset, add for example `--rates 36369 66369 99369`; the original-rate control is
+always retained. A quoted WAV path can replace the file picker, as in the audio
+inspection command.
+
+Method: rational polyphase resampling with an explicitly designed Kaiser FIR.
+The design targets 100 dB attenuation, passband up to about 90% of the lower
+Nyquist, and stopband beginning at that Nyquist; exact tap count, beta, cutoff,
+ratios and software versions are recorded. These are filter design targets, not
+a claim of measured capture quality. Near-Nyquist content can be attenuated even
+on upsampling; there is no new captured information. Extremely costly ratios
+requiring more than 10,000,001 taps are rejected instead of silently using a
+lower-quality filter. The identity control bypasses filtering but still uses the
+same FLOAT output subtype; an original of higher precision may incur quantization.
+
+Comparisons include duration rounding, per-channel sample peaks/RMS, common
+~250 ms Hann PSD windows (about 4 Hz bins), and round-trip error after reading the
+saved WAV and converting it back to the original rate. Error is start-aligned,
+with no fitted gain/time shift or normalization. Whole-file and interior errors
+(excluding 0.1 seconds at each edge when possible) are separate. SNR is an error
+metric, not a listening score; an exact match has a label rather than a fabricated
+finite dB value. A player or Windows driver may resample again during listening;
+these reports do not establish the DAC's physical rate.
+
+This prototype decodes the source into memory and processes one target at a time;
+it is not a streaming resampler. The free-RAM/disk preflight is an estimate, not
+a guarantee. JSON has raw spectral data and source/derived hashes. Tests cover
+identity, duration and tone preservation, rejection above a lower Nyquist,
+stereo, silence, actual saved headers/hashes, dry-run and overwrite refusal.

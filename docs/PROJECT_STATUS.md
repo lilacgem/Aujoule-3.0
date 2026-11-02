@@ -192,3 +192,27 @@ and integration of these measurements into canonical Compiler 3 remain unfinishe
 The received audiodata.json is Python/Librosa source referencing another file,
 not analysis results. This step neither restores its assumptions nor relabels
 symbolic constants as measurements.
+
+## Subsequent implementation: software sample-rate comparison
+
+`scripts/compare_sample_rates.py` creates separately hashed FLOAT WAV derivatives
+at conventional and requested experimental rates, using explicit rational FIR
+resampling, then measures stored-file levels, PSD and forward/reverse conversion
+error. Source bytes are hashed before/after. Resource checks, new output folders,
+no normalization, recorded filtering parameters, duration verification and a
+standalone comparison report are included. An original-rate identity control is
+retained. Native capture and DAC-rate verification are not performed.
+
+Tests exposed inadequate out-of-band rejection with the initial default short
+filter; it was replaced by a documented 100 dB-design Kaiser filter with explicit
+transition/cutoff. That is a design target, not a universal achieved attenuation
+claim. Synthetic tone/stereo/rate/header/hash/resource-preview tests verify the
+selected implementation. Near-Nyquist attenuation, output float32 precision and
+reverse-filter error are disclosed, not labeled as superior audio quality.
+No original source, new recording equipment, final 369 equation or experiential
+mapping is inferred from these conversions. The user's full audio still needs
+this comparison command run on Windows; results from it have not been inspected.
+
+Validation at this increment: all 32 Python tests pass with the optional audio
+dependencies installed. The complete ten-rate matrix also ran on a synthetic
+recording; the user's full-source comparison is still pending local execution.
