@@ -96,3 +96,15 @@ Snapshot checks and attributed descriptive corrections are implemented for revie
 Persistent store concurrency, source/provenance resolution, authenticated rights
 and correction authority, retention enforcement and actual carry remain open.
 No successful review upgrades draft snapshots to completed canonical states.
+
+## Local evidence resolver
+
+| ID | Location | Status |
+| --- | --- | --- |
+| STATE-EVIDENCE | `docs/STATE_EVIDENCE_RESOLUTION_v0.1.md` | v0.1 read-only local file-chain resolver; no history authorization |
+
+Actual selected feature/summary/comparison files are resolved to the draft.
+Optional original/derivative byte hashes do not establish native capture,
+measurement truth or rights. Corrected metadata cannot silently override the
+original evidence. Persistent commit, authenticated authority and correction
+reconciliation remain unimplemented; a resolution report is not a commit token.

@@ -346,3 +346,25 @@ Validation: 52 Python cases pass with optional dependencies; the updated transit
 subset also passes stricter snapshot checks and known-derivative rejection. The
 actual uploaded draft was reviewed as replay without changes or history advance.
 The demo produces three accepted review cases and five expected rejections.
+
+## Subsequent implementation: local state-evidence resolver
+
+`resolve_state_evidence.py` resolves an actual supported state/features/summary/
+comparison chain, verifies file/content references, reconstructs expected payload
+content, checks primary and alternative observation contracts and rejects
+mismatches. Optional source and derivative byte hashes are streamed; missing
+media checks remain explicit. Known producer name/version is supported without
+claiming an authenticated build. Input/report hashes and scope are recorded;
+inputs are never rewritten.
+
+The actual uploaded user-data chain resolved in the cloud; raw source and derived
+media bytes were not available there. Synthetic file fixtures exercise positive
+resolution and six rejection cases, without audio/capture claims. This closes
+the local measurement-file association gap for matching drafts, not source
+ownership, independent scientific verification, corrected-metadata reconciliation,
+trusted storage or persistent history commit. Both review and resolver remain
+non-committing prototypes.
+
+Validation: all 56 Python tests pass with optional audio dependencies. The uploaded
+chain resolves 2,731 observations across 10 conditions; optional media bytes remain
+not provided in this cloud run.

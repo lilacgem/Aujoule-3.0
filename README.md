@@ -640,3 +640,47 @@ External source/measurement bytes and correction-author identity are unresolved;
 a successful review is not proof of source rights or a production transition.
 Measurements cannot be patched by a correction record. Replay cannot increment
 history. Existing output folders are refused.
+
+## Resolve the draft state's actual measurement evidence
+
+Run with your existing audio environment:
+
+```bat
+.venv-audio\Scripts\python scripts\resolve_state_evidence.py
+```
+
+Select these three files in order:
+
+1. `runtime\audio-state-draft-001\audio-state.json`
+2. `runtime\matched-features-002\features.json` (keep summary.json beside it)
+3. `runtime\rate-comparison-001\comparison.json`
+
+Open `runtime\evidence-resolution-001\evidence-resolution.html` afterward.
+The resolver reads/hash-checks the referenced files, reconstructs the supported
+draft observation model and compares its observations/method/units/alternative
+references with the supplied state. Missing files, altered bytes or mismatched
+observations reject. No conversion or Visual Studio rebuild is needed.
+
+For source and derivative byte verification too, start the command with
+`--check-media`. A fourth picker asks for the original WAV; derivatives are read
+beside comparison.json. Hashing is streamed, not whole-WAV decoding. Keep the
+command window open; checking large derived files may take time. This does not
+verify native capture, media headers, rights, scientific validity or identity.
+The report distinguishes absent media checks from matched byte hashes.
+
+Use a new output suffix with `--output` for another report. Explicit `--state`,
+`--features`, `--summary`, `--comparison` and `--source` paths replace pickers;
+`--verify-derived` checks only derivative bytes. Existing evidence files are never
+rewritten. History/identity memory/commit remain off. A metadata-corrected state
+cannot silently bypass reproduction of the original evidence; attributed
+reconciliation is a separate unresolved path.
+
+For a synthetic integrity demo (no real audio), run:
+
+```bat
+.venv-audio\Scripts\python scripts\demo_evidence_resolution.py
+```
+
+It prints PASS and a fresh `runtime\evidence-demo-*\demo.html` path, with one
+accepted chain and six expected rejections. See the
+[resolver contract](docs/STATE_EVIDENCE_RESOLUTION_v0.1.md) for scope and limits.
