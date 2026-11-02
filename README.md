@@ -732,3 +732,25 @@ correction, source hash replacement, strict-resolver override, authenticated
 attestation or history commit. It does not establish which container bytes changed
 or compare against the unavailable earlier original WAV bytes. Only the identity
 control is rechecked here; other derivative WAVs are not rehashed by this command.
+
+### Preserve the verified draft in a local checkpoint archive
+
+```bat
+.venv-audio\Scripts\python scripts\archive_audio_checkpoint.py
+```
+
+Select the current original WAV. The tool rechecks the measurement chain and sample
+equality, then atomically stores the draft and a fresh receipt in
+`runtime/local-draft-checkpoints/checkpoints.sqlite3`. Repeated imports reuse the
+same checkpoint. Conflicting/stale writes stop. This preserves a draft; it does
+not advance sessions, carry or evolution history, or replace either source hash.
+
+Read and check the stored records later with:
+
+```bat
+.venv-audio\Scripts\python scripts\archive_audio_checkpoint.py --inspect
+```
+
+No new installation is required. Audio and other evidence stay external; keep the
+original runtime folders. Details and limits:
+[local checkpoint archive](docs/LOCAL_DRAFT_CHECKPOINT_ARCHIVE_v0.1.md).

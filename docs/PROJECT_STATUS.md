@@ -384,3 +384,15 @@ unchanged inputs, saved-report alteration and actual sample inequality.
 The user's uploaded sample comparison reports exact equality across 15,063,149
 mono frames at 44,100 Hz against the hash-matched control; the fresh reconciliation
 against their WAV must run locally because those media bytes are unavailable here.
+
+## Subsequent implementation: local draft checkpoint archive
+
+`archive_audio_checkpoint.py` freshly reconciles the measurement chain and current
+WAV before preserving a draft checkpoint plus receipt in local SQLite. A transaction
+checks the actual expected current checkpoint and atomically inserts records;
+replays reuse the checkpoint and different-state advancement is unsupported.
+Read-only inspection checks stored hashes/links and receipt coverage. Draft history
+permissions stay false; this is preservation of review artifacts, not persistent
+learning, session count/carry advancement, or authenticated canonical history.
+Audio and features remain external. Manual retention and local privacy apply.
+See LOCAL_DRAFT_CHECKPOINT_ARCHIVE_v0.1.md for implementation boundaries.

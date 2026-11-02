@@ -108,3 +108,7 @@ Optional original/derivative byte hashes do not establish native capture,
 measurement truth or rights. Corrected metadata cannot silently override the
 original evidence. Persistent commit, authenticated authority and correction
 reconciliation remain unimplemented; a resolution report is not a commit token.
+
+- Added `LOCAL_DRAFT_CHECKPOINT_ARCHIVE_v0.1.md`: local SQLite preservation of freshly
+  verified draft snapshots and reconciliation receipts. Explicitly excludes
+  cross-state promotion, session/carry advancement and permission changes.
