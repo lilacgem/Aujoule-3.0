@@ -684,3 +684,24 @@ For a synthetic integrity demo (no real audio), run:
 It prints PASS and a fresh `runtime\evidence-demo-*\demo.html` path, with one
 accepted chain and six expected rejections. See the
 [resolver contract](docs/STATE_EVIDENCE_RESOLUTION_v0.1.md) for scope and limits.
+
+### Check a changed WAV hash against the earlier identity control
+
+If the current original WAV has a different file hash but unchanged measurements,
+keep the previous evidence intact and run:
+
+```bat
+.venv-audio\Scripts\python scripts\compare_audio_samples.py
+```
+
+Select the current original WAV, then the earlier
+`runtime/rate-comparison-001/comparison.json`. The script locates its identity
+control (`derived-44100Hz.wav`) beside that record and verifies the control hash
+before comparing decoded samples exactly in small blocks. It performs no
+resampling or edits. Open `runtime/audio-sample-check-001/sample-comparison.html`
+and retain `sample-comparison.json`. Existing output is refused.
+
+Matching decoded samples establishes equality against that hash-linked control;
+it does not explain changed container bytes, authenticate the comparison record,
+or replace the original source hash in any previous report. Different lengths,
+rates, channels, non-finite samples or altered control bytes stop the comparison.
