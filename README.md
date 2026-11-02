@@ -491,3 +491,43 @@ Keep matched-features-001 as the prior method's record. New reports identify
 comparison. Synthetic boundary tests cover 20, 250 and 4,000 Hz across multiple
 sample grids; conservation tests cover even/odd FFT sizes and split bins. These
 test the method, not native hardware capture or a promised audible improvement.
+
+## Controlled evoMetrics fixed-focus trial
+
+This diagnostic uses **corrected features**, not the original WAV, and does not
+repeat measurement or conversion. The approved preset is
+`experiments/evo-metrics-fixed-focus-trial.json`: focus=.5, sessionCount=0,
+priorLeftover=1, bandRmsReference=.1, independent windows. The normalization
+reference remains an experimental scale, not calibrated energy. The preset's
+configured values are not claims about actual camera brightness or identity history.
+
+```bat
+.venv-audio\Scripts\python scripts\run_evo_trial.py
+```
+
+Select **features.json inside matched-features-002**. Its sibling summary.json
+must be present. The tool verifies the full feature hash, corrected method,
+window alignment and core-source reference. It recognizes the known LF/CRLF
+conversion of the archived JavaScript instead of treating Windows line endings
+as changed logic. Unknown core edits require explicit reconciliation.
+
+Open `runtime\evo-trial-001\trial.html`. Outputs include trial-timeline.png,
+trial-summary.json (small review file) and trial.json (all windows). The report
+separates continuous audio/formula differences from root/gate/shape changes,
+counts clipped normalization windows and minimum-session-number buckets, and
+includes a zero-input control. Input/source hashes, configuration and producer
+versions remain linked. Gate fractions count overlapping windows, not time
+percentages or independent sessions. All roots can stay identical despite small
+continuous changes; a floor/quantizer can hide input differences.
+
+The original rules produce symbolic root 2 even for zero input with this preset;
+that is not measured sound. Session count 0 makes the 369 contribution zero, so
+this run does not test its influence at nonzero counts. No camera, microphone,
+source audio, identity database or persistent history is accessed/advanced.
+This is neither canonical Compiler 3 state nor an approved final equation.
+
+Use `--features` and `--summary` for explicit file paths. For another run use a new
+`--output runtime\evo-trial-002`; existing trial folders are not replaced.
+Future parameter experiments can pass an explicit copied `--config` file, with
+each change documented. Do not tune parameters merely to produce desired gates.
+Tests are `test_evo_trial.py` in the optional audio test suite.

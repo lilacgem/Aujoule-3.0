@@ -259,3 +259,22 @@ old report spectra alone cannot reconstruct the corrected window integrations.
 Validation: all 37 Python tests pass, including fractional partition conservation
 and boundary-tone comparisons. The revised ten-condition CLI ran on synthetic
 audio. Corrected measurements for the user's recording require a local rerun.
+
+## Subsequent implementation: fixed-context evoMetrics diagnostic trial
+
+`run_evo_trial.py` evaluates corrected v0.2 feature records using the explicitly
+approved focus .5/session count 0/prior leftover 1 trial, with experimental RMS
+reference .1. It preserves measured and symbolic records separately, verifies
+feature/summary hashes and aligned windows, records preset/core/producer hashes,
+and does not open audio or advance history. Reports show continuous differences,
+root/gate/shape changes, quantizer floors, normalization clipping and zero input.
+The known LF/CRLF conversion of the received core is recognized explicitly.
+
+The trial was executed against the user's already-uploaded corrected records;
+private measurements and generated trial artifacts remain in ignored runtime,
+not committed to the repository. Output stability under these fixed settings is
+not validation of physical resonance, the 369 multiplier at nonzero counts,
+identity evolution or the final equation. Zero input can yield a nonzero root
+under the original floor rule, and many input changes can share a symbolic bucket.
+All original logic remains preserved; no production renderer or canonical model
+was changed in this increment.
