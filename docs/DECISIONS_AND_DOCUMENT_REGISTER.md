@@ -85,3 +85,14 @@ checks are documented; persistence/carry and new render mappings are not enabled
 This keeps D-006, D-007 and D-010 open rather than treating a local draft export
 as architectural completion. The established master and original rules remain
 unchanged. Rate variants/windows cannot silently become evolutionary sessions.
+
+## Transition review prototype
+
+| ID | Location | Status |
+| --- | --- | --- |
+| TRANSITION-REVIEW | `docs/SESSION_TRANSITION_REVIEW_v0.1.md` | v0.1 supported snapshot-review contract; no persistent commit |
+
+Snapshot checks and attributed descriptive corrections are implemented for review.
+Persistent store concurrency, source/provenance resolution, authenticated rights
+and correction authority, retention enforcement and actual carry remain open.
+No successful review upgrades draft snapshots to completed canonical states.

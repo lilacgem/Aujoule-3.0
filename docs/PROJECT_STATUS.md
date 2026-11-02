@@ -324,3 +324,25 @@ Validation: 47 Python cases pass with optional dependencies, including structura
 schema review, measurement preservation, overlay separation, deterministic payload
 IDs, tamper/scope rejection and overwrite refusal. The actual user-data draft was
 validated against the schema and all 2,731 observation records matched the input.
+
+## Subsequent implementation: session-transition review validator
+
+`review_session_transition.py` validates prior/candidate/current draft references,
+explicit review permissions, session declarations, attributed descriptive corrections,
+read-only claims, replay and changes. Named conflict/stale/hash/policy failures
+leave snapshots untouched. Saving verifies review hashes and refuses overwrite.
+A synthetic demo shows accepted review cases and expected rejections without
+actual source capture or history mutation. Numeric measurement corrections need
+new measurement records, not in-place edits.
+
+Successful review remains valid-for-review-not-commit; no current pointer,
+persistent carry, authenticated identity or store CAS is implemented. External
+source/measurement references remain unresolved at this reviewer boundary and
+would block a future commit. The additive contract documents these limits rather
+than treating review success as completed lineage architecture. Synthetic fixture
+files are expressly not evidence from the user's audio or real new sessions.
+
+Validation: 52 Python cases pass with optional dependencies; the updated transition
+subset also passes stricter snapshot checks and known-derivative rejection. The
+actual uploaded draft was reviewed as replay without changes or history advance.
+The demo produces three accepted review cases and five expected rejections.

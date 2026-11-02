@@ -608,3 +608,35 @@ Hash encoding is explicitly Python sorted-JSON, not JCS or authorship proof.
 Unknown fields/invalid observations fail instead of being silently discarded.
 The optional JSON Schema review test uses jsonschema if installed; the exporter
 itself needs only the existing audio environment and its built-in contract checks.
+
+## Session-transition validator — review only
+
+Run the synthetic acceptance/rejection demo with the existing audio environment:
+
+```bat
+.venv-audio\Scripts\python scripts\demo_session_transition.py
+```
+
+It prints PASS and the path to a fresh `runtime\transition-demo-*\demo.html`.
+Open that page. Three cases are accepted **for review only** (replay, reanalysis,
+attributed metadata correction) and five expected errors are caught (conflict,
+stale-current, forbidden history permission, wrong predecessor, wrong before-value).
+These are invented fixtures, not changes to your recording or real session history.
+No C++ rebuild, conversion or new dependency installation is needed.
+
+The [request/output contract](docs/SESSION_TRANSITION_REVIEW_v0.1.md) explains
+fields, supported correction scope, named errors and remaining architecture.
+The validator CLI accepts explicit prior/candidate/request files:
+
+```bat
+.venv-audio\Scripts\python scripts\review_session_transition.py --prior PRIOR.json --candidate CANDIDATE.json --request REQUEST.json --output runtime\transition-review-001
+```
+
+Add `--current CURRENT.json` to test a separate supplied current snapshot.
+Without it the prior is the current **review snapshot**, not a verified live
+store pointer. Reports are transition-review.html/json; prior and candidate are
+never overwritten. A valid result cannot commit history or activate carry.
+External source/measurement bytes and correction-author identity are unresolved;
+a successful review is not proof of source rights or a production transition.
+Measurements cannot be patched by a correction record. Replay cannot increment
+history. Existing output folders are refused.
