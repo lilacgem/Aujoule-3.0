@@ -300,3 +300,27 @@ native capture, generalization to other recordings or actual evolving identities
 Validation at this increment: 43 Python tests pass with optional audio dependencies.
 The full 13-setting study ran on the supplied corrected records, comparing every
 rate under each setting. Private input records/generated reports are not committed.
+
+## Subsequent implementation: candidate evolved audio-state export
+
+A new draft model and structural JSON Schema define separate source references,
+measurement vectors, optional symbolic overlays, rate-alternative references,
+future lineage transitions and experience profiles. `build_audio_state.py`
+produces a local review-only snapshot from corrected verified features. All
+measured windows/continuous values survive unchanged; optional symbols are kept
+separately and remain unverified unless independently checked. Same payload
+replays keep their content ID. Unsupported permission expansion, history commits,
+render mappings, unknown fields and invalid measurements are rejected.
+
+The model was exported from the user's uploaded corrected measurements, retaining
+all 2,731 original windows in ignored runtime. This does not implement persistent
+carry, canonical dimensions, final equation, identity memory or a renderer update.
+The proposed session/correction/retention contract is documented for a later
+transition-validator implementation. No user audio, measurement dataset or
+runtime export is committed to GitHub. Existing master/spec versions remain
+unchanged; the candidate is an additive draft, not a promoted master release.
+
+Validation: 47 Python cases pass with optional dependencies, including structural
+schema review, measurement preservation, overlay separation, deterministic payload
+IDs, tamper/scope rejection and overwrite refusal. The actual user-data draft was
+validated against the schema and all 2,731 observation records matched the input.

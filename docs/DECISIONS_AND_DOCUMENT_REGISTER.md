@@ -71,3 +71,17 @@ observed differences, not presumed founder-approved corrections. Claims can
 block compilation on conflict but cannot override evidence. Explicit local
 permissions and manual retention are a prototype boundary, not a production
 rights or identity system. The Python test suite now contains 19 passing cases.
+
+## Evolved audio-state candidate
+
+| ID | Location | Status |
+| --- | --- | --- |
+| AUDIO-STATE-DRAFT | `docs/EVOLVED_AUDIO_STATE_MODEL_v0.1.md` | v0.1 DRAFT candidate; does not approve final canonical dimensions |
+| AUDIO-STATE-SCHEMA | `schemas/audio-state-draft-v0.1.schema.json` | Review-only structural schema, not a production canonical validator |
+
+Candidate exporter preserves continuous features with separate optional symbolic
+records. The proposed session boundary, append-only corrections and transition
+checks are documented; persistence/carry and new render mappings are not enabled.
+This keeps D-006, D-007 and D-010 open rather than treating a local draft export
+as architectural completion. The established master and original rules remain
+unchanged. Rate variants/windows cannot silently become evolutionary sessions.

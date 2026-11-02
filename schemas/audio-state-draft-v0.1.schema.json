@@ -1,0 +1,460 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:auevo:audio-state-draft-envelope:0.1",
+  "title": "AUEVO audio-state draft envelope \u2014 review only",
+  "type": "object",
+  "required": [
+    "schema",
+    "stateId",
+    "contentHash",
+    "createdAt",
+    "payload"
+  ],
+  "properties": {
+    "schema": {
+      "const": "AUEVO-AudioStateDraftEnvelope/v0.1"
+    },
+    "stateId": {
+      "type": "string",
+      "pattern": "^audio-draft:sha256:[0-9a-f]{64}$"
+    },
+    "contentHash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "schema",
+        "status",
+        "sourceRef",
+        "producer",
+        "measurementRecord",
+        "symbolicOverlay",
+        "alternativeConditions",
+        "lineage",
+        "permissions",
+        "experience",
+        "hashEncoding",
+        "limitations"
+      ],
+      "properties": {
+        "schema": {
+          "const": "AUEVO-AudioStateDraft/v0.1"
+        },
+        "status": {
+          "const": "DRAFT-REVIEW-ONLY"
+        },
+        "sourceRef": {
+          "type": "object"
+        },
+        "producer": {
+          "type": "object",
+          "required": [
+            "name",
+            "version",
+            "buildHash"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "buildHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "measurementRecord": {
+          "type": "object",
+          "required": [
+            "featureSha256",
+            "comparisonRef",
+            "method",
+            "units",
+            "classification",
+            "observations"
+          ],
+          "properties": {
+            "featureSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "comparisonRef": {
+              "type": "object"
+            },
+            "method": {
+              "type": "object"
+            },
+            "units": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "classification": {
+              "const": "MEASURED_TECHNICAL_FEATURES"
+            },
+            "observations": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/observation"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "symbolicOverlay": {
+          "type": "object",
+          "required": [
+            "status",
+            "experimentRef",
+            "records",
+            "role"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "not-attached",
+                "preserved-unverified"
+              ]
+            },
+            "experimentRef": {
+              "type": "object"
+            },
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "windowIndex",
+                  "classification",
+                  "output",
+                  "verificationStatus"
+                ],
+                "properties": {
+                  "windowIndex": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "classification": {
+                    "const": "DERIVED_EXPERIMENTAL"
+                  },
+                  "output": {
+                    "type": "object"
+                  },
+                  "verificationStatus": {
+                    "const": "preserved-not-recomputed"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "role": {
+              "const": "optional interpretation; never replaces measured features"
+            }
+          },
+          "additionalProperties": false
+        },
+        "alternativeConditions": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "lineage": {
+          "type": "object",
+          "required": [
+            "parentStateRef",
+            "transitionKind",
+            "historyCommit",
+            "persistentEvolutionAdvanced",
+            "missing"
+          ],
+          "properties": {
+            "parentStateRef": {
+              "const": null
+            },
+            "transitionKind": {
+              "const": "initial-review-export"
+            },
+            "historyCommit": {
+              "const": "not-implemented"
+            },
+            "persistentEvolutionAdvanced": {
+              "const": false
+            },
+            "missing": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "permissions": {
+          "type": "object",
+          "required": [
+            "operationScope",
+            "sourceRightsStatus",
+            "grantsRecording",
+            "grantsCloudUpload",
+            "grantsIdentityMemory"
+          ],
+          "properties": {
+            "operationScope": {
+              "const": "explicit-local-draft-export"
+            },
+            "sourceRightsStatus": {
+              "const": "UNKNOWN"
+            },
+            "grantsRecording": {
+              "const": false
+            },
+            "grantsCloudUpload": {
+              "const": false
+            },
+            "grantsIdentityMemory": {
+              "const": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "experience": {
+          "type": "object",
+          "required": [
+            "renderProfileRef",
+            "directives",
+            "status"
+          ],
+          "properties": {
+            "renderProfileRef": {
+              "const": null
+            },
+            "directives": {
+              "const": null
+            },
+            "status": {
+              "const": "not-mapped"
+            }
+          },
+          "additionalProperties": false
+        },
+        "hashEncoding": {
+          "const": "python-sorted-json-utf8-v1"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "observation": {
+      "type": "object",
+      "required": [
+        "startSeconds",
+        "endSeconds",
+        "centerSeconds",
+        "actualStartSeconds",
+        "actualEndSeconds",
+        "binSpacingHz",
+        "rmsLinear",
+        "samplePeak",
+        "index",
+        "windowSamples",
+        "evidenceClass",
+        "crestFactor",
+        "rmsChangeDb",
+        "positiveBandChange",
+        "commonBandPower",
+        "fullBand",
+        "commonBand"
+      ],
+      "properties": {
+        "startSeconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "endSeconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "centerSeconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "actualStartSeconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "actualEndSeconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "binSpacingHz": {
+          "type": "number",
+          "minimum": 0
+        },
+        "rmsLinear": {
+          "type": "number",
+          "minimum": 0
+        },
+        "samplePeak": {
+          "type": "number",
+          "minimum": 0
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "windowSamples": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "evidenceClass": {
+          "const": "MEASURED"
+        },
+        "crestFactor": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "rmsChangeDb": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "positiveBandChange": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "commonBandPower": {
+          "type": "object",
+          "required": [
+            "bass",
+            "mid",
+            "high"
+          ],
+          "properties": {
+            "bass": {
+              "type": "number",
+              "minimum": 0
+            },
+            "mid": {
+              "type": "number",
+              "minimum": 0
+            },
+            "high": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "fullBand": {
+          "type": "object",
+          "required": [
+            "centroidHz",
+            "bandwidthHz",
+            "rolloff85Hz",
+            "flatness"
+          ],
+          "properties": {
+            "centroidHz": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "bandwidthHz": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "rolloff85Hz": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "flatness": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "commonBand": {
+          "type": "object",
+          "required": [
+            "centroidHz",
+            "bandwidthHz",
+            "rolloff85Hz",
+            "flatness"
+          ],
+          "properties": {
+            "centroidHz": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "bandwidthHz": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "rolloff85Hz": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "flatness": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

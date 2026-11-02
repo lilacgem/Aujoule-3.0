@@ -575,3 +575,36 @@ Digital-root reduction can erase such increments; floor/rounding still matters.
 Compare those measured outputs with the raw contribution report instead of
 assuming a larger 369 term must cause proportionately larger symbolic change.
 All preset choices, input hashes and method versions are recorded.
+
+## Draft evolved audio state — preserve the continuous feature vector
+
+The candidate model is documented in
+[EVOLVED_AUDIO_STATE_MODEL_v0.1](docs/EVOLVED_AUDIO_STATE_MODEL_v0.1.md), with a
+[review-only JSON Schema](schemas/audio-state-draft-v0.1.schema.json).
+This is not a final canonical dimension set or a new production equation.
+
+```bat
+.venv-audio\Scripts\python scripts\build_audio_state.py
+```
+
+Select features.json inside matched-features-002 (keep summary.json beside it).
+Open `runtime\audio-state-draft-001\state-review.html`. The exporter preserves
+all original measurement windows and units, with source/method hashes. Any
+symbolic overlay already attached to the feature file is separated and labeled
+preserved/unverified, never substituted for measured values. Separate trial and
+sensitivity reports are not automatically ingested. Rate conditions remain
+alternative derivatives, not new sessions.
+
+The output has no history commit, parent-state transition, renderer mapping or
+new recording/upload/memory permission. It is a local review artifact; it does
+not read the WAV, update the Orb or silently implement persistent carry. Those
+contracts require explicit implementation and validation after reviewing the
+model. `--features`, `--summary` and `--output` support command-line paths; use a
+new output suffix for another export. No installation or Visual Studio rebuild.
+
+Created time is outside the deterministic payload hash. Same inputs/build yield
+the same content identity, while envelope byte hashes may differ across runs.
+Hash encoding is explicitly Python sorted-JSON, not JCS or authorship proof.
+Unknown fields/invalid observations fail instead of being silently discarded.
+The optional JSON Schema review test uses jsonschema if installed; the exporter
+itself needs only the existing audio environment and its built-in contract checks.
