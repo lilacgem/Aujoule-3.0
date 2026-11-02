@@ -392,3 +392,70 @@ it is not a streaming resampler. The free-RAM/disk preflight is an estimate, not
 a guarantee. JSON has raw spectral data and source/derived hashes. Tests cover
 identity, duration and tone preservation, rejection above a lower Nyquist,
 stereo, silence, actual saved headers/hashes, dry-run and overwrite refusal.
+
+## Compare features on matching time windows
+
+After pulling this increment, use the existing audio environment; no additional
+packages, conversion rerun or Visual Studio rebuild are needed:
+
+```bat
+.venv-audio\Scripts\python scripts\compare_audio_features.py --output runtime\matched-features-001
+```
+
+First select the unchanged original WAV. Then select **comparison.json** inside
+`runtime\rate-comparison-001` (not measurements.json from the earlier inspection).
+Leave the derived WAVs beside that comparison file; their hashes and headers are
+verified before use. The command reads small windows, so it does not need the
+previous resampler's full-file RAM budget. It retains feature records in memory,
+not complete decoded recordings, and supports at most 50,000 windows per condition.
+Long runs can still take time and produce a sizeable full dataset.
+
+Open `runtime\matched-features-001\features.html`. Upload **summary.json** for
+review; features.json keeps the complete window data locally. The report compares
+RMS, sample peak, common-band centroid/bandwidth/rolloff and band powers against
+the original. JSON also has full-band values, spectral flatness, crest factor,
+adjacent RMS changes and positive band-amplitude changes. These are defined
+measurements, not a complete musical or transient interpretation.
+
+Defaults are 250 ms physical windows with 125 ms hop. Start/end positions are
+rounded to each file's nearest sample and recorded, not fitted by correlation.
+The common upper limit is the lowest Nyquist across files, capped at 20 kHz.
+Bands are bass 20–250 Hz, mid 250–4000 Hz and high 4000 Hz to that common limit.
+This equalizes comparison bandwidth; full-band metrics remain separate. FFT-bin
+placement and rounding still affect values. Use `--window-seconds` and
+`--hop-seconds` for explicitly recorded alternatives. A final incomplete window
+is excluded. Same-grid identity comparisons should be exact for the existing
+32-bit-float source/control. No original/derived audio is rewritten.
+
+### Optional evoMetrics experiment — off by default
+
+The received JavaScript is preserved unchanged in
+`docs/source_records/evo-metrics-received/`; its hash is recorded in output.
+`scripts/evo_metrics_experiment.py` adapts only its defined formula, rounding,
+carry/gate and shape behavior for validated inputs. This is **not** a completed
+new canonical equation or a promoted production rule.
+
+The new proposed input adapter is explicit: take RMS of the three common-band
+powers, divide each by configured `bandRmsReference`, clip individually to 0–1,
+then average to produce voiceEnergy. This is an experimental normalization, not
+calibrated physical energy or proof of the historical input definition. Clipped
+bands, audio contribution and session-count contribution are reported separately.
+
+Focus is **not** inferred from sound or silently treated as camera brightness.
+For an explicit trial, copy `experiments/evo-metrics-template.json` into your
+ignored runtime folder. Choose its focus, session count, prior leftover and RMS
+reference, then deliberately set enabled to true. Add `--evo-config` pointing to
+that file. Template numbers are illustrative settings, not user consent or
+founder-approved semantics. Without that option, symbolic computation stays off.
+
+Every window is an **independent diagnostic evaluation** with the same configured
+context; time windows do not become new identities or sessions, and carry/history
+is not advanced. Root/gate differences can result from rounding thresholds, not
+new physical resonance. The received core's monotonic-level comment is not a
+working guarantee; the source remains archived, not silently repaired.
+The template is `independent-windows-fixed-context` only; no camera, database,
+cloud upload, identity inference or persistent evolution is enabled.
+
+Tests: `.venv-audio\Scripts\python -m unittest discover -s tests -p test_matched_features.py -v`.
+Optional command-line paths `--original` and `--comparison` replace the dialogs.
+Existing output folders are refused; use a new suffix for a separate run.

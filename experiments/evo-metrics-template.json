@@ -1,0 +1,9 @@
+{
+  "schema": "AUEVO-EvoMetricsExperiment/v0.1",
+  "enabled": false,
+  "configuredFocus": 0.5,
+  "sessionCount": 0,
+  "priorLeftover": 1,
+  "bandRmsReference": 0.1,
+  "evaluationMode": "independent-windows-fixed-context"
+}

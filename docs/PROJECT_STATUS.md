@@ -216,3 +216,26 @@ this comparison command run on Windows; results from it have not been inspected.
 Validation at this increment: all 32 Python tests pass with the optional audio
 dependencies installed. The complete ten-rate matrix also ran on a synthetic
 recording; the user's full-source comparison is still pending local execution.
+
+## Subsequent implementation: matched audio features and isolated symbolic trial
+
+`compare_audio_features.py` reads the original and verified derivatives on common
+physical windows, preserving source bytes and retaining per-condition bandwidth
+and actual boundary information. Primary comparisons use common bandwidth;
+full-band metrics are distinct. A small summary.json links the full feature
+record hash. No new resampling or playback/capture change is included.
+
+The received evoMetrics.js is archived unchanged with its digest. A separate
+opt-in Python experimental adapter defines band-RMS normalization and configured
+focus/context; the original formula, gate/carry and shape outcomes were checked
+against 16 JavaScript cases. Focus is not inferred or represented as a camera
+measurement. The default command emits measured features only. Independent
+per-window trials do not update session count, identity or carry history.
+This is not approval of a new equation, canonical dimensional semantics or
+scientific meaning for symbolic outputs. The core's historical issues are
+retained in its source record, not silently corrected.
+
+Validation: 35 Python cases pass with optional audio dependencies; the complete
+ten-condition matched-window CLI ran on synthetic audio. Sixteen symbolic
+outcomes were cross-checked against the received JavaScript. Windows execution
+of the new feature command and the full user recording are still pending.
